@@ -1,1 +1,184 @@
-<p>user-details works!</p>
+
+<h2>Resident Details</h2>
+
+@if (isLoading) {
+
+  <p>Loading resident information...</p>
+
+} @else {
+
+  @if (resident) {
+
+    <h3>Personal Information</h3>
+
+    <p>
+      <strong>Full Name:</strong>
+      {{ resident.displayName }}
+    </p>
+
+    <p>
+      <strong>Email:</strong>
+      {{ resident.email }}
+    </p>
+
+    <p>
+      <strong>Role:</strong>
+      {{ resident.role }}
+    </p>
+
+    <p>
+      <strong>Account Verification:</strong>
+      {{ resident.verificationStatus }}
+    </p>
+
+    <hr>
+
+    <h3>Verification Request</h3>
+
+    <p>
+      <strong>Request Status:</strong>
+      {{ requestStatus }}
+    </p>
+
+    <p>
+      <strong>Submitted:</strong>
+
+      @if (submittedAt) {
+        {{ submittedAt | date:'MMM d, y, h:mm a' }}
+      } @else {
+        Date unavailable
+      }
+    </p>
+
+    <p>
+      <strong>Demo Request:</strong>
+      {{ demoOnly ? 'Yes' : 'No' }}
+    </p>
+
+    <p>
+      <strong>Front Sample Selected:</strong>
+      {{ frontSampleSelected ? 'Yes' : 'No' }}
+    </p>
+
+    <p>
+      <strong>Back Sample Selected:</strong>
+      {{ backSampleSelected ? 'Yes' : 'No' }}
+    </p>
+
+    <hr>
+
+    <h3>Verification Images (Demo)</h3>
+
+    @if (hasFrontImage || hasBackImage) {
+
+      <p>
+        These are uploaded demonstration images.
+        They are retrieved through the protected
+        BahaSumbong backend.
+      </p>
+
+      @if (isLoadingImages) {
+        <p>Loading protected verification images...</p>
+      }
+
+      <h4>Front Image</h4>
+
+      @if (frontImageUrl) {
+
+        <img
+          [src]="frontImageUrl"
+          alt="Front verification sample"
+          width="320"
+          style="max-width: 100%; height: auto;"
+        >
+
+      } @else if (!isLoadingImages) {
+
+        <p>Front image unavailable.</p>
+
+      }
+
+      <h4>Back Image</h4>
+
+      @if (backImageUrl) {
+
+        <img
+          [src]="backImageUrl"
+          alt="Back verification sample"
+          width="320"
+          style="max-width: 100%; height: auto;"
+        >
+
+      } @else if (!isLoadingImages) {
+
+        <p>Back image unavailable.</p>
+
+      }
+
+      @if (imageErrorMessage) {
+        <p>{{ imageErrorMessage }}</p>
+      }
+
+    } @else {
+
+      <p>
+        No verification images were uploaded
+        for this request.
+      </p>
+
+      <p>
+        This is a simulated review, not actual
+        identity or residency verification.
+      </p>
+
+    }
+
+    <hr>
+
+    <h3>Administrator Decision (Demo)</h3>
+
+    @if (canReview) {
+
+      <button
+        type="button"
+        (click)="reviewResident('rejected')"
+        [disabled]="isProcessing">
+        Decline
+      </button>
+
+      <button
+        type="button"
+        (click)="reviewResident('approved')"
+        [disabled]="isProcessing">
+        Accept
+      </button>
+
+    } @else if (requestStatus === 'approved') {
+
+      <p>This demo application has been accepted.</p>
+
+    } @else if (requestStatus === 'rejected') {
+
+      <p>This demo application has been declined.</p>
+
+    }
+
+    @if (isProcessing) {
+      <p>Saving administrator decision...</p>
+    }
+
+    @if (successMessage) {
+      <p>{{ successMessage }}</p>
+    }
+
+  }
+
+  @if (errorMessage) {
+    <p>{{ errorMessage }}</p>
+  }
+
+}
+
+<a routerLink="/admin/verification-requests">
+  Back to Verification Requests
+</a>

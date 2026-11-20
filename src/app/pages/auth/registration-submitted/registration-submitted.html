@@ -1,0 +1,142 @@
+
+<main class="registration-page">
+
+  <!-- DESKTOP CITY ILLUSTRATION -->
+  <aside class="city-section" aria-hidden="true">
+    <img
+      src="/auth-pics/City.png"
+      alt=""
+    />
+  </aside>
+
+  <!-- REGISTRATION PANEL -->
+  <section class="registration-panel">
+
+    <div class="registration-content">
+
+      <!-- HEADER -->
+      <header class="registration-header">
+
+        <img
+          src="/auth-pics/USTP-LOGO.jpg"
+          alt="USTP Villanueva Logo"
+          class="ustp-logo"
+        />
+
+        <h1 class="system-title">
+          <strong>BahaSumbong</strong>:
+          A Flood Prone Area &amp;
+          Drainage Mapping System
+        </h1>
+
+        <p class="resident-label">
+          Resident
+        </p>
+
+      </header>
+
+      <!-- LOADING STATE -->
+      @if (isLoading) {
+
+        <div
+          class="status-box"
+          role="status"
+          aria-live="polite"
+        >
+          <p>Checking your registration...</p>
+        </div>
+
+      } @else if (isPending) {
+
+        <!-- CONFIRMATION MESSAGE -->
+        <p class="confirmation-message">
+          Your response was submitted<br />
+          please wait for confirmation
+        </p>
+
+        <!-- SUCCESS CARD -->
+        <div class="submission-card">
+
+          <img
+            src="/auth-pics/Submit-successful.png"
+            alt="Registration submitted illustration"
+            class="success-image"
+          />
+
+          <h2>
+            Registration Submitted!!
+          </h2>
+
+          <p class="submission-description">
+            Please wait 1–5 days, we're verifying
+            your account. Our team will email you
+            if the verification was complete.
+          </p>
+
+        </div>
+
+        <!-- BACK TO LOGIN BUTTON -->
+        <button
+          type="button"
+          class="login-button"
+          [disabled]="isSigningOut"
+          (click)="backToLogin()"
+        >
+          {{
+            isSigningOut
+              ? 'Signing out...'
+              : 'Back to login page'
+          }}
+        </button>
+
+        <!-- ERROR MESSAGE -->
+        @if (errorMessage) {
+
+          <p
+            class="error-message"
+            role="alert"
+          >
+            {{ errorMessage }}
+          </p>
+
+        }
+
+      } @else {
+
+        <!-- NOT PENDING / ERROR STATE -->
+        <div class="status-box error-state">
+
+          <h2>
+            Registration Status
+          </h2>
+
+          <p role="alert">
+            {{
+              errorMessage ||
+              'Your registration is no longer pending review.'
+            }}
+          </p>
+
+        </div>
+
+        <!-- BACK TO LOGIN BUTTON -->
+        <button
+          type="button"
+          class="login-button"
+          [disabled]="isSigningOut"
+          (click)="backToLogin()"
+        >
+          {{
+            isSigningOut
+              ? 'Signing out...'
+              : 'Back to login page'
+          }}
+        </button>
+
+      }
+
+    </div>
+
+  </section>
+
+</main>

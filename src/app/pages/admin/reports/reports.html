@@ -1,1 +1,365 @@
-<p>reports works!</p>
+
+<h1>Community Reports Management</h1>
+
+<p>
+  View and manage flooding and drainage
+  reports submitted by residents.
+</p>
+
+<hr>
+
+<!-- LOADING STATE -->
+
+@if (isLoading()) {
+
+  <p>Loading community reports...</p>
+
+} @else if (errorMessage()) {
+
+  <p role="alert">
+    {{ errorMessage() }}
+  </p>
+
+} @else {
+
+  <!-- =====================================
+       STATUS UPDATE MESSAGES
+       ===================================== -->
+
+  @if (statusSuccess()) {
+
+    <p role="status">
+      {{ statusSuccess() }}
+    </p>
+
+  }
+
+  @if (statusError()) {
+
+    <p role="alert">
+      {{ statusError() }}
+    </p>
+
+  }
+
+  <!-- =====================================
+       TOTAL COMMUNITY REPORTS
+       ===================================== -->
+
+  <h2>
+    Total Community Reports: {{ reports().length }}
+  </h2>
+
+  @if (reports().length === 0) {
+
+    <p>
+      No community reports have been submitted yet.
+    </p>
+
+  } @else {
+
+    <!-- =====================================
+         ALL COMMUNITY REPORTS
+         ===================================== -->
+
+    <ul>
+
+      @for (report of reports(); track report.id) {
+
+        <li>
+
+          <h3>
+            Report ID: {{ report.id }}
+          </h3>
+
+          <p>
+            <strong>Resident ID:</strong>
+            {{ report.residentId }}
+          </p>
+
+          <p>
+            <strong>Problem Type:</strong>
+            {{ report.problemType }}
+          </p>
+
+          <p>
+            <strong>Description:</strong>
+            {{ report.description }}
+          </p>
+
+          <p>
+            <strong>Location:</strong>
+            {{ report.locationDescription }}
+          </p>
+
+          <!-- =================================
+               CURRENT REPORT STATUS
+               ================================= -->
+
+          <p>
+            <strong>Current Status:</strong>
+
+            @switch (report.status) {
+
+              @case ('pending') {
+                Pending
+              }
+
+              @case ('in_progress') {
+                In Progress
+              }
+
+              @case ('resolved') {
+                Resolved
+              }
+
+              @case ('rejected') {
+                Rejected
+              }
+
+              @default {
+                Unknown
+              }
+
+            }
+
+          </p>
+
+          <!-- =================================
+               SUBMISSION DATE
+               ================================= -->
+
+          <p>
+            <strong>Date Submitted:</strong>
+
+            @if (report.createdAt) {
+
+              {{ report.createdAt | date:'medium' }}
+
+            } @else {
+
+              Date unavailable
+
+            }
+
+          </p>
+
+          <!-- =================================
+               LAST UPDATED
+               ================================= -->
+
+          @if (report.updatedAt) {
+
+            <p>
+              <strong>Last Updated:</strong>
+              {{ report.updatedAt | date:'medium' }}
+            </p>
+
+          }
+
+          <hr>
+
+          <!-- =================================
+               SUPPORTING REPORT PHOTOS
+               ================================= -->
+
+          <h4>Supporting Photos</h4>
+
+          <p>
+            <strong>Photos Attached:</strong>
+            {{ report.photoCount }}
+          </p>
+
+          @if (report.photoCount > 0) {
+
+            <button
+              type="button"
+              (click)="viewReportPhotos(report)"
+              [disabled]="
+                selectedReportId() === report.id &&
+                isLoadingPhotos()
+              "
+            >
+              View Supporting Photos
+              ({{ report.photoCount }})
+            </button>
+
+          } @else {
+
+            <p>
+              No supporting photos attached.
+            </p>
+
+          }
+
+          <!-- =================================
+               SELECTED PHOTO VIEWER
+               ================================= -->
+
+          @if (selectedReportId() === report.id) {
+
+            <div class="report-photo-viewer">
+
+              <h4>
+                Supporting Photos for Report
+                {{ report.id }}
+              </h4>
+
+              @if (isLoadingPhotos()) {
+
+                <p role="status">
+                  Loading protected supporting photos...
+                </p>
+
+              } @else if (photoError()) {
+
+                <p role="alert">
+                  {{ photoError() }}
+                </p>
+
+                <button
+                  type="button"
+                  (click)="retryPhotoLoading()"
+                >
+                  Retry Loading Photos
+                </button>
+
+              } @else if (photoUrls().length > 0) {
+
+                <div class="supporting-photos">
+
+                  @for (
+                    photo of photoUrls();
+                    track photo.index
+                  ) {
+
+                    <figure>
+
+                      <img
+                        [src]="photo.url"
+                        [alt]="
+                          'Supporting photo ' +
+                          (photo.index + 1) +
+                          ' for report ' +
+                          report.id
+                        "
+                        loading="lazy"
+                        style="
+                          display: block;
+                          max-width: 100%;
+                          max-height: 350px;
+                          height: auto;
+                          object-fit: contain;
+                        "
+                      >
+
+                      <figcaption>
+                        Supporting Photo
+                        {{ photo.index + 1 }}
+                      </figcaption>
+
+                    </figure>
+
+                  }
+
+                </div>
+
+              } @else {
+
+                <p>
+                  No supporting photos available.
+                </p>
+
+              }
+
+              <button
+                type="button"
+                (click)="clearSelectedReportPhotos()"
+              >
+                Hide Supporting Photos
+              </button>
+
+            </div>
+
+          }
+
+          <hr>
+
+          <!-- =================================
+               ADMINISTRATOR STATUS MANAGEMENT
+               ================================= -->
+
+          <h4>Manage Report Status</h4>
+
+          @if (report.status === 'pending') {
+
+            <button
+              type="button"
+              [disabled]="updatingReportId() !== null"
+              (click)="updateReportStatus(
+                report,
+                'in_progress'
+              )"
+            >
+              Mark In Progress
+            </button>
+
+          }
+
+          @if (
+            report.status === 'pending' ||
+            report.status === 'in_progress'
+          ) {
+
+            <button
+              type="button"
+              [disabled]="updatingReportId() !== null"
+              (click)="updateReportStatus(
+                report,
+                'resolved'
+              )"
+            >
+              Mark Resolved
+            </button>
+
+            <button
+              type="button"
+              [disabled]="updatingReportId() !== null"
+              (click)="updateReportStatus(
+                report,
+                'rejected'
+              )"
+            >
+              Reject Report
+            </button>
+
+          } @else if (
+            report.status === 'resolved' ||
+            report.status === 'rejected'
+          ) {
+
+            <p>
+              This report has received a final decision.
+            </p>
+
+          }
+
+          @if (updatingReportId() === report.id) {
+
+            <p>
+              Updating report status...
+            </p>
+
+          }
+
+          <hr>
+
+        </li>
+
+      }
+
+    </ul>
+
+  }
+
+}

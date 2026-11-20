@@ -1,1 +1,181 @@
-<p>map works!</p>
+
+<section class="community-map-page">
+
+  <h1>Community Flood & Drainage Map</h1>
+
+  <p>
+    Explore the map of Tagoloan,
+    Misamis Oriental, Philippines.
+  </p>
+
+  <p>
+    Click anywhere on the map to select
+    a new report location.
+  </p>
+
+  <p>
+    Blue marker: New report location.
+    Orange markers: Your previously submitted reports.
+  </p>
+
+  <!-- LEAFLET MAP -->
+
+  <div
+    #mapContainer
+    class="map-container"
+    role="region"
+    aria-label="Interactive flood and drainage report map"
+  ></div>
+
+  <hr>
+
+  <!-- SAVED REPORT MARKERS -->
+
+  <h2>My Saved Report Locations</h2>
+
+  @if (reportsLoading()) {
+
+    <p>Loading saved report markers...</p>
+
+  } @else if (reportsError()) {
+
+    <p role="alert">
+      {{ reportsError() }}
+    </p>
+
+  } @else {
+
+    <p>
+      Reports with map coordinates:
+      {{ mappedReports().length }}
+    </p>
+
+    @if (mappedReports().length === 0) {
+
+      <p>
+        You have no saved reports with map
+        coordinates yet.
+      </p>
+
+    } @else {
+
+      <p>
+        Click an orange marker on the map
+        to view its report information.
+      </p>
+
+    }
+
+  }
+
+  <!-- SELECTED EXISTING REPORT -->
+
+  @if (selectedSavedReport(); as savedReport) {
+
+    <h3>Selected Saved Report</h3>
+
+    <p>
+      <strong>Report ID:</strong>
+      {{ savedReport.id }}
+    </p>
+
+    <p>
+      <strong>Problem Type:</strong>
+      {{ savedReport.problemType }}
+    </p>
+
+    <p>
+      <strong>Status:</strong>
+      {{ savedReport.status }}
+    </p>
+
+    <p>
+      <strong>Latitude:</strong>
+      {{ savedReport.latitude.toFixed(6) }}
+    </p>
+
+    <p>
+      <strong>Longitude:</strong>
+      {{ savedReport.longitude.toFixed(6) }}
+    </p>
+
+    <a
+      [routerLink]="[
+        '/community/report-details',
+        savedReport.id
+      ]"
+    >
+      View Report Details
+    </a>
+
+  }
+
+  <hr>
+
+  <!-- NEW REPORT LOCATION -->
+
+  <h2>Selected New Report Location</h2>
+
+  @if (selectedLocation(); as location) {
+
+    <p>
+      <strong>Latitude:</strong>
+      {{ location.latitude.toFixed(6) }}
+    </p>
+
+    <p>
+      <strong>Longitude:</strong>
+      {{ location.longitude.toFixed(6) }}
+    </p>
+
+    <p>
+      New report location marker successfully placed.
+    </p>
+
+    <button
+      type="button"
+      (click)="clearSelectedLocation()"
+    >
+      Clear Selected Location
+    </button>
+
+    <p>
+      Confirm that the selected marker
+      represents the problem location.
+    </p>
+
+    <a
+      [routerLink]="['/community/create-report']"
+      [queryParams]="{
+        latitude: location.latitude,
+        longitude: location.longitude
+      }"
+    >
+      Use This Location for My Report
+    </a>
+
+  } @else {
+
+    <p>
+      No new report location selected.
+    </p>
+
+    <p>
+      Click somewhere on the map to
+      place a new report marker.
+    </p>
+
+  }
+
+  <hr>
+
+  <!-- DISCLAIMER -->
+
+  <p class="map-note">
+    Note: This map is for community reporting
+    and academic demonstration only.
+    It does not predict or automatically
+    detect flooding.
+  </p>
+
+</section>

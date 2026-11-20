@@ -1,0 +1,257 @@
+
+<main class="verification-page">
+
+  <!-- DESKTOP CITY ILLUSTRATION -->
+  <aside class="desktop-city" aria-hidden="true">
+    <img
+      src="/auth-pics/City.png"
+      alt=""
+    />
+  </aside>
+
+  <!-- IDENTITY VERIFICATION PANEL -->
+  <section class="verification-panel">
+
+    <div class="verification-inner">
+
+      <!-- HEADER -->
+      <header class="verification-header">
+
+        <img
+          class="ustp-logo"
+          src="/auth-pics/USTP-LOGO.jpg"
+          alt="USTP Villanueva Logo"
+        />
+
+        <h1 class="system-title">
+          <strong>BahaSumbong</strong>:
+          A Flood Prone Area &amp;
+          Drainage Mapping System
+        </h1>
+
+        <p class="resident-label">Resident</p>
+
+      </header>
+
+      <!-- LOADING -->
+      @if (isLoading) {
+
+        <div
+          class="state-message"
+          role="status"
+          aria-live="polite"
+        >
+          <mat-icon aria-hidden="true">
+            hourglass_empty
+          </mat-icon>
+
+          <p>Checking your account...</p>
+        </div>
+
+      } @else if (!isAllowed) {
+
+        <!-- ACCOUNT ERROR -->
+        <div class="state-message error-state">
+
+          <mat-icon aria-hidden="true">
+            error_outline
+          </mat-icon>
+
+          <p role="alert">
+            {{ errorMessage || 'Verification is unavailable.' }}
+          </p>
+
+          <button
+            type="button"
+            class="back-button state-back"
+            (click)="back()"
+          >
+            Back
+          </button>
+
+        </div>
+
+      } @else {
+
+        <!-- INSTRUCTIONS -->
+        <p class="verification-instruction">
+          Take a picture or upload<br />
+          a fictional sample ID
+        </p>
+
+        <h2 class="upload-heading">
+          Front and back of the ID
+        </h2>
+
+        <!-- IMAGE UPLOAD AREA -->
+        <div
+          class="upload-stage"
+          aria-describedby="sample-instructions"
+        >
+
+          <p
+            class="sample-instructions"
+            id="sample-instructions"
+          >
+            Fictional JPG/PNG samples only.
+            Maximum 3 MB per image.
+          </p>
+
+          <!-- FRONT IMAGE UPLOAD -->
+          <label
+            class="upload-tile"
+            for="front-sample-image"
+          >
+
+            <input
+              id="front-sample-image"
+              class="file-input"
+              type="file"
+              accept="image/jpeg,image/png"
+              [disabled]="isSubmitting"
+              (change)="selectFile($event, 'front')"
+            />
+
+            @if (frontPreviewUrl) {
+
+              <img
+                class="preview-image"
+                [src]="frontPreviewUrl"
+                alt="Front sample image preview"
+              />
+
+              <span class="preview-caption">
+                Change front image
+              </span>
+
+            } @else {
+
+              <mat-icon
+                class="tile-icon"
+                aria-hidden="true"
+              >
+                photo_camera
+              </mat-icon>
+
+              <span class="tile-title">
+                Add Photos
+              </span>
+
+              <span class="tile-description">
+                (Front of sample ID)
+              </span>
+
+            }
+
+          </label>
+
+          <!-- BACK IMAGE UPLOAD -->
+          <label
+            class="upload-tile"
+            for="back-sample-image"
+          >
+
+            <input
+              id="back-sample-image"
+              class="file-input"
+              type="file"
+              accept="image/jpeg,image/png"
+              [disabled]="isSubmitting"
+              (change)="selectFile($event, 'back')"
+            />
+
+            @if (backPreviewUrl) {
+
+              <img
+                class="preview-image"
+                [src]="backPreviewUrl"
+                alt="Back sample image preview"
+              />
+
+              <span class="preview-caption">
+                Change back image
+              </span>
+
+            } @else {
+
+              <mat-icon
+                class="tile-icon folder-icon"
+                aria-hidden="true"
+              >
+                folder_open
+              </mat-icon>
+
+              <span class="tile-title">
+                Upload Photos
+              </span>
+
+              <span class="tile-description">
+                (Back of sample ID)
+              </span>
+
+            }
+
+          </label>
+
+        </div>
+
+        <!-- SELECTED FILES -->
+        @if (frontSample || backSample) {
+
+          <div class="selected-files" aria-live="polite">
+
+            @if (frontSample) {
+              <p>
+                Front: {{ frontSample.name }}
+              </p>
+            }
+
+            @if (backSample) {
+              <p>
+                Back: {{ backSample.name }}
+              </p>
+            }
+
+          </div>
+
+        }
+
+        <!-- ERROR MESSAGE -->
+        @if (errorMessage) {
+
+          <p class="feedback-error" role="alert">
+            {{ errorMessage }}
+          </p>
+
+        }
+
+        <!-- NAVIGATION BUTTONS -->
+        <div class="action-row">
+
+          <button
+            type="button"
+            class="back-button"
+            (click)="back()"
+            [disabled]="isSubmitting"
+          >
+            Back
+          </button>
+
+          <button
+            type="button"
+            class="submit-button"
+            [disabled]="!readyToSubmit"
+            (click)="submitVerification()"
+          >
+            {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+          </button>
+
+        </div>
+
+      }
+
+    </div>
+
+  </section>
+
+</main>

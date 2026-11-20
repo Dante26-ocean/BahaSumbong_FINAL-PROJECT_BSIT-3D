@@ -1,0 +1,189 @@
+
+<main class="confirmation-page">
+
+  <section class="confirmation-card">
+
+    <!-- Desktop Google Header -->
+    <header class="google-header">
+
+      <img
+        src="/auth-pics/Google.png"
+        alt=""
+        class="google-logo"
+      >
+
+      <span>Continue with Google</span>
+
+    </header>
+
+    <div class="confirmation-body">
+
+      <!-- Desktop Left Section -->
+      <div class="desktop-brand">
+
+        <img
+          src="/auth-pics/USTP-LOGO.jpg"
+          alt="USTP Villanueva Logo"
+          class="ustp-logo"
+        >
+
+        <h1 class="desktop-brand-title">
+          You're Signing Back
+        </h1>
+
+        <p class="desktop-brand-subtitle">
+          to continue to
+          <strong>BahaSumbong</strong>
+        </p>
+
+      </div>
+
+      <!-- Right Section / Mobile Content -->
+      <div class="confirmation-content">
+
+        <!-- Mobile Brand Section -->
+        <div class="mobile-brand">
+
+          <img
+            src="/auth-pics/USTP-LOGO.jpg"
+            alt="USTP Villanueva Logo"
+            class="ustp-logo"
+          >
+
+          <h1 class="system-title">
+            BahaSumbong: A Flood Prone Area &amp;
+            Drainage Mapping System
+          </h1>
+
+        </div>
+
+        @if (isLoading) {
+
+          <!-- Loading State -->
+          <div
+            class="status-content"
+            role="status"
+            aria-live="polite"
+          >
+            <h2>Loading your account...</h2>
+            <p>
+              Please wait while we verify your
+              BahaSumbong account.
+            </p>
+          </div>
+
+        } @else if (errorMessage) {
+
+          <!-- Error State -->
+          <div class="status-content error-state">
+
+            <h2>Unable to continue</h2>
+
+            <p role="alert">
+              {{ errorMessage }}
+            </p>
+
+          </div>
+
+          <div class="confirmation-actions single-action">
+            <button
+              type="button"
+              class="button-primary"
+              (click)="cancel()"
+            >
+              Back to Login
+            </button>
+          </div>
+
+        } @else if (isReady) {
+
+          <!-- Confirmation Title -->
+          <h2 class="confirmation-title">
+            You're signing back in to
+            <strong>BahaSumbong</strong>
+          </h2>
+
+          <!-- Authenticated Resident Account -->
+          <div class="account-details">
+
+            <div class="account-row">
+
+              <div class="account-avatar">
+
+                @if (profilePhotoUrl) {
+
+                  <img
+                    [src]="profilePhotoUrl"
+                    alt="Google account profile"
+                    referrerpolicy="no-referrer"
+                    (error)="profilePhotoUrl = ''"
+                  >
+
+                } @else {
+
+                  <mat-icon aria-hidden="true">
+                    account_circle
+                  </mat-icon>
+
+                }
+
+              </div>
+
+              <div class="account-information">
+
+                <p class="account-name">
+                  {{ displayName }}
+                </p>
+
+                <p class="account-email">
+                  {{ email }}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <!-- Terms and Conditions -->
+          <p class="terms-description">
+            Review
+            <strong>
+              BahaSumbong Terms and Conditions
+            </strong>
+            to understand how
+            <strong>BahaSumbong</strong>
+            will process and protect your data.
+          </p>
+
+          <!-- Navigation Buttons -->
+          <div class="confirmation-actions">
+
+            <button
+              type="button"
+              class="button-secondary"
+              (click)="cancel()"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              class="button-primary"
+              (click)="next()"
+              [disabled]="!isReady || isLoading"
+            >
+              Next
+            </button>
+
+          </div>
+
+        }
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>

@@ -1,1 +1,418 @@
-<p>create-report works!</p>
+
+<h1>Create Community Report</h1>
+
+<p>
+  Report flooding or drainage problems
+  in your community.
+</p>
+
+<hr>
+
+<!-- =====================================
+     SUBMISSION SUCCESS
+     ===================================== -->
+
+@if (submissionComplete) {
+
+  <h2>Report Submitted Successfully!</h2>
+
+  <p role="status">
+    {{ successMessage }}
+  </p>
+
+  <p>
+    <strong>Report ID:</strong>
+    {{ completedReportId }}
+  </p>
+
+  <p>
+    Your report is now available for
+    administrator review.
+  </p>
+
+  <p>
+    <a routerLink="/community/my-reports">
+      View My Reports
+    </a>
+  </p>
+
+  <p>
+    <a routerLink="/community/map">
+      Create Another Report
+    </a>
+  </p>
+
+} @else {
+
+  <!-- =====================================
+       STEP PROGRESS
+       ===================================== -->
+
+  <h2>
+    Step {{ currentStep }} of {{ totalSteps }}
+  </h2>
+
+  <progress
+    [value]="currentStep"
+    [max]="totalSteps"
+    aria-label="Report submission progress"
+  ></progress>
+
+  <hr>
+
+  <form
+    #reportForm="ngForm"
+    (ngSubmit)="submitReport(reportForm)"
+  >
+
+    <!-- =====================================
+         STEP 1: LOCATION
+         ===================================== -->
+
+    @if (currentStep === 1) {
+
+      <h2>Step 1 — Report Location</h2>
+
+      <p>
+        Select the location of the flooding
+        or drainage problem.
+      </p>
+
+      @if (hasSelectedLocation) {
+
+        <p>
+          Location selected successfully.
+        </p>
+
+        <p>
+          <strong>Latitude:</strong>
+          {{ latitude?.toFixed(6) }}
+        </p>
+
+        <p>
+          <strong>Longitude:</strong>
+          {{ longitude?.toFixed(6) }}
+        </p>
+
+        <p>
+          <a routerLink="/community/map">
+            Change Location on Map
+          </a>
+        </p>
+
+      } @else {
+
+        <p>
+          No report location has been selected.
+        </p>
+
+        <a routerLink="/community/map">
+          Select Location on Map
+        </a>
+
+      }
+
+    }
+
+    <!-- =====================================
+         STEP 2: PROBLEM TYPE
+         ===================================== -->
+
+    @if (currentStep === 2) {
+
+      <h2>Step 2 — Problem Type</h2>
+
+      <p>
+        Select the type of problem
+        you want to report.
+      </p>
+
+      <label for="problemType">
+        Problem Type:
+      </label>
+
+      <select
+        id="problemType"
+        name="problemType"
+        [(ngModel)]="problemType"
+        required
+      >
+
+        <option value="">
+          Select problem type
+        </option>
+
+        <option value="flooding">
+          Flooding
+        </option>
+
+        <option value="blocked_drainage">
+          Blocked Drainage
+        </option>
+
+        <option value="damaged_drainage">
+          Damaged Drainage
+        </option>
+
+      </select>
+
+    }
+
+    <!-- =====================================
+         STEP 3: REPORT DETAILS
+         ===================================== -->
+
+    @if (currentStep === 3) {
+
+      <h2>Step 3 — Report Details</h2>
+
+      <p>
+        Describe the flooding or drainage
+        problem clearly.
+      </p>
+
+      <label for="description">
+        Problem Description:
+      </label>
+
+      <br>
+
+      <textarea
+        id="description"
+        name="description"
+        [(ngModel)]="description"
+        required
+        minlength="10"
+        maxlength="1000"
+        rows="6"
+        cols="40"
+        placeholder="Describe the flooding or drainage problem..."
+      ></textarea>
+
+      <p>
+        Minimum 10 characters.
+        Maximum 1000 characters.
+      </p>
+
+    }
+
+    <!-- =====================================
+         STEP 4: SUPPORTING PHOTOS
+         ===================================== -->
+
+    @if (currentStep === 4) {
+
+      <h2>Step 4 — Supporting Photos</h2>
+
+      <p>
+        Attach 1 to 3 supporting photos.
+      </p>
+
+      <p>
+        Accepted formats: JPG and PNG.
+        Maximum 3 MB per photo.
+      </p>
+
+      <label for="reportPhotos">
+        Supporting Photos:
+      </label>
+
+      <br>
+
+      <input
+        #photoInput
+        id="reportPhotos"
+        type="file"
+        accept="image/jpeg,image/png"
+        multiple
+        [disabled]="isSubmitting"
+        (change)="onPhotosSelected($event)"
+      >
+
+      <p>
+        You can add photos one at a time.
+      </p>
+
+      <!-- SELECTED PHOTO LIST -->
+
+      <h3>Selected Photos</h3>
+
+      @if (selectedPhotos.length > 0) {
+
+        <ul>
+
+          @for (
+            photo of selectedPhotos;
+            track $index
+          ) {
+
+            <li>
+
+              {{ photo.name }}
+
+              ({{ (photo.size / 1024 / 1024).toFixed(2) }} MB)
+
+              <button
+                type="button"
+                [disabled]="isSubmitting"
+                (click)="removePhoto($index)"
+              >
+                Remove
+              </button>
+
+            </li>
+
+          }
+
+        </ul>
+
+        <p>
+          <strong>
+            Total Photos Selected:
+            {{ selectedPhotos.length }} / 3
+          </strong>
+        </p>
+
+        <button
+          type="button"
+          [disabled]="isSubmitting"
+          (click)="clearSelectedPhotos()"
+        >
+          Clear All Photos
+        </button>
+
+      } @else {
+
+        <p>
+          No supporting photos selected.
+        </p>
+
+      }
+
+      <hr>
+
+      <!-- REPORT SUMMARY -->
+
+      <h3>Review Your Report</h3>
+
+      <p>
+        <strong>Problem Type:</strong>
+        {{ problemType }}
+      </p>
+
+      <p>
+        <strong>Description:</strong>
+        {{ description }}
+      </p>
+
+      <p>
+        <strong>Latitude:</strong>
+        {{ latitude?.toFixed(6) }}
+      </p>
+
+      <p>
+        <strong>Longitude:</strong>
+        {{ longitude?.toFixed(6) }}
+      </p>
+
+      <p>
+        <strong>Supporting Photos:</strong>
+        {{ selectedPhotos.length }}
+      </p>
+
+      <!-- RETRY INFORMATION -->
+
+      @if (createdReportId) {
+
+        <p role="status">
+          Your report already exists in Firestore.
+          Retry attaching photos to the same report.
+        </p>
+
+        <p>
+          <strong>Report ID:</strong>
+          {{ createdReportId }}
+        </p>
+
+      }
+
+    }
+
+    <hr>
+
+    <!-- =====================================
+         STEP NAVIGATION
+         ===================================== -->
+
+    <nav aria-label="Report submission steps">
+
+      @if (currentStep > 1) {
+
+        <button
+          type="button"
+          [disabled]="
+            isSubmitting ||
+            createdReportId !== null
+          "
+          (click)="previousStep()"
+        >
+          Back
+        </button>
+
+      }
+
+      @if (currentStep < 4) {
+
+        <button
+          type="button"
+          [disabled]="isSubmitting"
+          (click)="nextStep()"
+        >
+          Next
+        </button>
+
+      } @else {
+
+        <button
+          type="submit"
+          [disabled]="
+            isSubmitting ||
+            selectedPhotos.length === 0
+          "
+        >
+
+          @if (isSubmitting) {
+
+            Submitting Report...
+
+          } @else if (createdReportId) {
+
+            Retry Photo Upload
+
+          } @else {
+
+            Submit Report With Photos
+
+          }
+
+        </button>
+
+      }
+
+    </nav>
+
+  </form>
+
+  <!-- =====================================
+       ERROR MESSAGE
+       ===================================== -->
+
+  @if (errorMessage) {
+
+    <p role="alert">
+      {{ errorMessage }}
+    </p>
+
+  }
+
+}

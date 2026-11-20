@@ -1,1 +1,208 @@
-<p>dashboard works!</p>
+
+<h1>Administrator Dashboard</h1>
+
+<p>
+  Monitor community flooding and drainage
+  reports submitted by residents.
+</p>
+
+<hr>
+
+<!-- LOADING STATE -->
+
+@if (isLoading()) {
+
+  <p>Loading Administrator Dashboard...</p>
+
+} @else if (errorMessage()) {
+
+  <!-- ERROR STATE -->
+
+  <p role="alert">
+    {{ errorMessage() }}
+  </p>
+
+} @else {
+
+  <!-- =====================================
+       ADMINISTRATOR INFORMATION
+       ===================================== -->
+
+  <h2>Welcome, {{ adminName() }}!</h2>
+
+  @if (adminEmail()) {
+
+    <p>
+      <strong>Email:</strong>
+      {{ adminEmail() }}
+    </p>
+
+  }
+
+  <hr>
+
+  <!-- =====================================
+       COMMUNITY REPORT STATISTICS
+       ===================================== -->
+
+  <h2>Community Report Statistics</h2>
+
+  <p>
+    <strong>Total Reports:</strong>
+    {{ totalReports() }}
+  </p>
+
+  <p>
+    <strong>Pending Reports:</strong>
+    {{ pendingReports() }}
+  </p>
+
+  <p>
+    <strong>In Progress:</strong>
+    {{ inProgressReports() }}
+  </p>
+
+  <p>
+    <strong>Resolved Reports:</strong>
+    {{ resolvedReports() }}
+  </p>
+
+  <p>
+    <strong>Rejected Reports:</strong>
+    {{ rejectedReports() }}
+  </p>
+
+  <hr>
+
+  <!-- =====================================
+       ADMINISTRATOR NAVIGATION
+       ===================================== -->
+
+  <h2>Administrator Actions</h2>
+
+  <p>
+    <a routerLink="/admin/reports">
+      Manage Community Reports
+    </a>
+  </p>
+
+  <p>
+    <a routerLink="/admin/map">
+      View Community Report Map
+    </a>
+  </p>
+
+  <p>
+    <a routerLink="/admin/verification-requests">
+      Manage Resident Verification Requests
+    </a>
+  </p>
+
+  <hr>
+
+  <!-- =====================================
+       RECENT COMMUNITY REPORTS
+       ===================================== -->
+
+  <h2>Recent Community Reports</h2>
+
+  @if (recentReports().length === 0) {
+
+    <p>
+      No community reports have been submitted yet.
+    </p>
+
+  } @else {
+
+    <p>
+      Showing the five most recently submitted reports.
+    </p>
+
+    <ul>
+
+      @for (
+        report of recentReports();
+        track report.id
+      ) {
+
+        <li>
+
+          <h3>
+            Report ID: {{ report.id }}
+          </h3>
+
+          <p>
+            <strong>Resident ID:</strong>
+            {{ report.residentId }}
+          </p>
+
+          <p>
+            <strong>Problem Type:</strong>
+            {{ report.problemType }}
+          </p>
+
+          <p>
+            <strong>Description:</strong>
+            {{ report.description }}
+          </p>
+
+          <p>
+            <strong>Location:</strong>
+            {{ report.locationDescription }}
+          </p>
+
+          <p>
+            <strong>Status:</strong>
+
+            @switch (report.status) {
+
+              @case ('pending') {
+                Pending
+              }
+
+              @case ('in_progress') {
+                In Progress
+              }
+
+              @case ('resolved') {
+                Resolved
+              }
+
+              @case ('rejected') {
+                Rejected
+              }
+
+              @default {
+                Unknown
+              }
+
+            }
+
+          </p>
+
+          <p>
+            <strong>Date Submitted:</strong>
+
+            @if (report.createdAt) {
+
+              {{ report.createdAt | date:'medium' }}
+
+            } @else {
+
+              Date unavailable
+
+            }
+
+          </p>
+
+          <hr>
+
+        </li>
+
+      }
+
+    </ul>
+
+  }
+
+}

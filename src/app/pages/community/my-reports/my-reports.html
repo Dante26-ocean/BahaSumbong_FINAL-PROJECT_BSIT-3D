@@ -1,1 +1,137 @@
-<p>my-reports works!</p>
+
+<h1>My Reports</h1>
+
+<p>
+  View all the flooding and drainage reports
+  you have submitted.
+</p>
+
+<hr>
+
+<!-- LOADING STATE -->
+
+@if (isLoading()) {
+
+  <p>Loading your reports...</p>
+
+} @else if (errorMessage()) {
+
+  <p role="alert">
+    {{ errorMessage() }}
+  </p>
+
+} @else {
+
+  <!-- TOTAL REPORTS -->
+
+  <h2>
+    Total Submitted Reports: {{ reports().length }}
+  </h2>
+
+  <!-- EMPTY STATE -->
+
+  @if (reports().length === 0) {
+
+    <p>
+      You haven't submitted any reports yet.
+    </p>
+
+  } @else {
+
+    <!-- REPORT LIST -->
+
+    <ul>
+
+      @for (report of reports(); track report.id) {
+
+        <li>
+
+          <h3>
+            Report ID: {{ report.id }}
+          </h3>
+
+          <p>
+            <strong>Problem Type:</strong>
+            {{ report.problemType }}
+          </p>
+
+          <p>
+            <strong>Description:</strong>
+            {{ report.description }}
+          </p>
+
+          <p>
+            <strong>Location:</strong>
+            {{ report.locationDescription }}
+          </p>
+
+          <p>
+            <strong>Status:</strong>
+
+            @switch (report.status) {
+
+              @case ('pending') {
+                Pending
+              }
+
+              @case ('in_progress') {
+                In Progress
+              }
+
+              @case ('resolved') {
+                Resolved
+              }
+
+              @case ('rejected') {
+                Rejected
+              }
+
+              @default {
+                Unknown
+              }
+
+            }
+
+          </p>
+
+          <p>
+            <strong>Submitted:</strong>
+
+            @if (report.createdAt) {
+
+              {{ report.createdAt | date:'medium' }}
+
+            } @else {
+
+              Date unavailable
+
+            }
+
+          </p>
+
+          <!-- VIEW REPORT DETAILS -->
+
+          <p>
+
+            <a
+              [routerLink]="[
+                '/community/report-details',
+                report.id
+              ]"
+            >
+              View Details
+            </a>
+
+          </p>
+
+          <hr>
+
+        </li>
+
+      }
+
+    </ul>
+
+  }
+
+}

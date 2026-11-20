@@ -1,0 +1,768 @@
+
+/* =========================================
+   BAHASUMBONG ACCOUNT CONFIRMATION
+   PHASE 2 - FIGMA UI INTEGRATION
+
+   Mobile:  iPhone 17 - 30 (402 x 874)
+   Desktop: Desktop - 7 (1440 x 1024)
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+/* =========================================
+   COMPONENT RESET
+   ========================================= */
+
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  margin: 0;
+  padding: 0;
+
+  background: #0d2440;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* =========================================
+   DESKTOP BACKGROUND - FULL SCREEN
+   ========================================= */
+
+.confirmation-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 100dvh;
+
+  margin: 0;
+  padding: 0 16px;
+
+  background-color: #0d2440;
+  color: #0d2440;
+}
+
+/* =========================================
+   DESKTOP CONFIRMATION CARD
+   ========================================= */
+
+.confirmation-card {
+  display: flex;
+  flex-direction: column;
+
+  width: 100%;
+  max-width: 994px;
+
+  min-height: 500px !important;
+
+  background: #e7f0fa;
+  border: 1px solid rgba(13, 36, 64, 0.5);
+  border-radius: 30px;
+
+  overflow: hidden;
+}
+
+/* =========================================
+   GOOGLE HEADER - DESKTOP
+   ========================================= */
+
+.google-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 67px;
+  padding: 0 28px;
+
+  border-bottom: 1px solid rgba(13, 36, 64, 0.4);
+
+  color: #0d2440;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.google-logo {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+/* =========================================
+   DESKTOP TWO-COLUMN LAYOUT
+   ========================================= */
+
+.confirmation-body {
+  display: grid;
+  grid-template-columns: 54.4% minmax(0, 1fr);
+  flex: 1;
+
+  min-width: 0;
+  padding: 46px 38px 84px 54px;
+}
+
+/* =========================================
+   DESKTOP LEFT BRAND SECTION
+   ========================================= */
+
+.desktop-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.ustp-logo {
+  display: block;
+  width: 104px;
+  height: 104px;
+
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.desktop-brand-title {
+  margin: 35px 0 0;
+
+  color: #0d2440;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.desktop-brand-subtitle {
+  margin: 12px 0 0;
+
+  color: #0d2440;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.desktop-brand-subtitle strong {
+  font-weight: 700;
+}
+
+/* Hide mobile brand on desktop */
+
+.mobile-brand {
+  display: none;
+}
+
+/* =========================================
+   DESKTOP RIGHT CONTENT
+   ========================================= */
+
+.confirmation-content {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  padding-top: 13px;
+}
+
+/* =========================================
+   CONFIRMATION TITLE
+   ========================================= */
+
+.confirmation-title {
+  margin: 0;
+
+  color: #0d2440;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.confirmation-title strong {
+  display: block;
+
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* =========================================
+   GOOGLE ACCOUNT INFORMATION
+   ========================================= */
+
+.account-details {
+  width: 100%;
+  margin-top: 55px;
+
+  padding: 0 12px 17px;
+
+  border-bottom: 1px solid rgba(13, 36, 64, 0.25);
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  width: 100%;
+  min-width: 0;
+}
+
+.account-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  width: 51px;
+  height: 51px;
+
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.account-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.account-avatar mat-icon {
+  width: 51px;
+  height: 51px;
+
+  font-size: 51px;
+  line-height: 51px;
+
+  color: #0d2440;
+}
+
+.account-information {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-width: 0;
+  flex: 1;
+}
+
+.account-name {
+  margin: 0;
+
+  color: #0d2440;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+.account-email {
+  margin: 2px 0 0;
+
+  color: rgba(13, 36, 64, 0.75);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+}
+
+/* =========================================
+   TERMS AND CONDITIONS
+   ========================================= */
+
+.terms-description {
+  margin: 25px 0 0;
+
+  color: rgba(13, 36, 64, 0.9);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+
+  overflow-wrap: break-word;
+}
+
+.terms-description strong {
+  color: #0d2440;
+  font-weight: 700;
+}
+
+/* =========================================
+   CONFIRMATION BUTTONS
+   ========================================= */
+
+.confirmation-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 39px;
+
+  width: 100%;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.button-secondary,
+.button-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+
+  border-radius: 10px;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.15s ease;
+}
+
+/* Cancel Button */
+
+.button-secondary {
+  background: #e7f0fa;
+  color: #0d2440;
+  border: 1px solid #0d2440;
+}
+
+/* Next Button */
+
+.button-primary {
+  background: #0d2440;
+  color: #e7f0fa;
+  border: 1px solid #0d2440;
+}
+
+.button-primary:hover:not(:disabled),
+.button-secondary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.button-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.button-primary:focus-visible,
+.button-secondary:focus-visible {
+  outline: 2px solid #0866ff;
+  outline-offset: 3px;
+}
+
+.single-action {
+  justify-content: flex-end;
+}
+
+.single-action .button-primary {
+  flex: 0 1 185px;
+}
+
+/* =========================================
+   LOADING AND ERROR STATES
+   ========================================= */
+
+.status-content {
+  padding: 35px 0;
+
+  color: #0d2440;
+  text-align: center;
+}
+
+.status-content h2 {
+  margin: 0 0 12px;
+
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.status-content p {
+  margin: 0;
+
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.error-state p {
+  color: #a12626;
+}
+
+/* =========================================
+   TABLET AND MOBILE LAYOUT
+   ========================================= */
+
+@media (max-width: 900px) {
+
+  :host {
+    background: #e7f0fa;
+  }
+
+  .confirmation-page {
+    align-items: stretch;
+
+    min-height: 100dvh;
+    margin: 0;
+    padding: 0;
+
+    background: #e7f0fa;
+  }
+
+  .confirmation-card {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100dvh;
+
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  /* Remove Desktop Google Header */
+
+  .google-header {
+    display: none;
+  }
+
+  /* Mobile Single Column */
+
+  .confirmation-body {
+    display: flex;
+    flex-direction: column;
+
+    width: 100%;
+    max-width: 450px;
+    min-height: 100dvh;
+
+    margin: 0 auto;
+
+    padding:
+      clamp(26px, 8.58dvh, 75px)
+      24px
+      clamp(24px, 6.75dvh, 59px);
+  }
+
+  .desktop-brand {
+    display: none;
+  }
+
+  .confirmation-content {
+    flex: 1;
+    padding: 0;
+  }
+
+  /* =====================================
+     MOBILE LOGO AND BRAND
+     ===================================== */
+
+  .mobile-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 100%;
+    text-align: center;
+  }
+
+  .mobile-brand .ustp-logo {
+    width: 104px;
+    height: 104px;
+    border-radius: 14px;
+  }
+
+  .system-title {
+    width: 100%;
+    max-width: 354px;
+    margin: 14px 0 0;
+
+    color: #0d2440;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 22px;
+    text-align: center;
+  }
+
+  /* =====================================
+     MOBILE CONFIRMATION TITLE
+     ===================================== */
+
+  .confirmation-title {
+    margin-top: 34px;
+
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 27px;
+    text-align: center;
+  }
+
+  .confirmation-title strong {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  /* =====================================
+     MOBILE ACCOUNT INFORMATION
+     ===================================== */
+
+  .account-details {
+    margin-top: 55px;
+    padding: 0 10px 8px;
+
+    border-bottom: 1px solid rgba(13, 36, 64, 0.25);
+  }
+
+  .account-row {
+    gap: 10px;
+  }
+
+  .account-avatar {
+    width: 35px;
+    height: 35px;
+  }
+
+  .account-avatar mat-icon {
+    width: 35px;
+    height: 35px;
+
+    font-size: 35px;
+    line-height: 35px;
+  }
+
+  .account-name {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .account-email {
+    margin-top: 0;
+
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  /* =====================================
+     MOBILE TERMS AND CONDITIONS
+     ===================================== */
+
+  .terms-description {
+    margin: 26px 9px 0;
+
+    font-size: 14px;
+    line-height: 1.25;
+    letter-spacing: 0.05em;
+  }
+
+  /* =====================================
+     MOBILE BUTTONS
+     ===================================== */
+
+  .confirmation-actions {
+    gap: 22px;
+    padding-top: 24px;
+  }
+
+  .button-secondary,
+  .button-primary {
+    height: 34px;
+
+    font-size: 12px;
+    border-radius: 9px;
+  }
+
+  .single-action .button-primary {
+    flex: 1;
+  }
+
+  /* Loading and Error */
+
+  .status-content {
+    padding: 50px 5px 20px;
+  }
+
+  .status-content h2 {
+    font-size: 18px;
+  }
+
+  .status-content p {
+    font-size: 14px;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE SCREENS
+   ========================================= */
+
+@media (max-width: 360px) {
+
+  .confirmation-body {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .system-title {
+    font-size: 16px;
+    line-height: 20px;
+  }
+
+  .account-name {
+    font-size: 14px;
+  }
+
+  .account-email {
+    font-size: 12px;
+  }
+
+  .terms-description {
+    margin-left: 5px;
+    margin-right: 5px;
+
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .confirmation-actions {
+    gap: 14px;
+  }
+}
+
+/* =========================================
+   SHORT MOBILE HEIGHTS
+   ========================================= */
+
+@media (max-width: 900px) and (max-height: 760px) {
+
+  .confirmation-body {
+    padding-top: clamp(16px, 5dvh, 35px);
+    padding-bottom: 24px;
+  }
+
+  .mobile-brand .ustp-logo {
+    width: 80px;
+    height: 80px;
+  }
+
+  .system-title {
+    margin-top: 8px;
+
+    font-size: 15px;
+    line-height: 19px;
+  }
+
+  .confirmation-title {
+    margin-top: 18px;
+
+    font-size: 16px;
+    line-height: 23px;
+  }
+
+  .confirmation-title strong {
+    font-size: 15px;
+    line-height: 21px;
+  }
+
+  .account-details {
+    margin-top: 30px;
+  }
+
+  .terms-description {
+    margin-top: 18px;
+    font-size: 13px;
+  }
+
+  .confirmation-actions {
+    padding-top: 16px;
+  }
+}
+
+/* =========================================
+   SHORT DESKTOP HEIGHTS
+   ========================================= */
+
+@media (min-width: 901px) and (max-height: 820px) {
+
+  .confirmation-page {
+    padding: 0 16px;
+  }
+
+  .confirmation-card {
+    min-height: min(680px, 100dvh);
+  }
+
+  .confirmation-body {
+    padding: 24px 30px 32px 40px;
+  }
+
+  .desktop-brand-title {
+    margin-top: 22px;
+    font-size: 27px;
+  }
+
+  .desktop-brand-subtitle {
+    font-size: 20px;
+  }
+
+  .confirmation-title {
+    font-size: 27px;
+  }
+
+  .confirmation-title strong {
+    font-size: 23px;
+  }
+
+  .account-details {
+    margin-top: 35px;
+  }
+
+  .account-name {
+    font-size: 17px;
+  }
+
+  .account-email {
+    font-size: 14px;
+  }
+
+  .terms-description {
+    margin-top: 20px;
+    font-size: 17px;
+  }
+
+  .confirmation-actions {
+    gap: 20px;
+  }
+}
+
+/* =========================================
+   REDUCED MOTION ACCESSIBILITY
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .button-primary,
+  .button-secondary {
+    transition: none;
+  }
+}

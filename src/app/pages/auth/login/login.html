@@ -1,1 +1,161 @@
-<p>login works!</p>
+
+<main class="login-page">
+
+  <!-- Desktop City Illustration -->
+  <section class="desktop-illustration" aria-hidden="true">
+    <img src="/auth-pics/City.png" alt="">
+  </section>
+
+  <!-- Login Panel -->
+  <section class="login-panel">
+
+    <!-- Mobile City Illustration -->
+    <img
+      class="mobile-illustration"
+      src="/auth-pics/City.png"
+      alt=""
+      aria-hidden="true"
+    >
+
+    <div class="login-content">
+
+      <!-- Logo and System Name -->
+      <header class="login-header">
+
+        <img
+          class="ustp-logo"
+          src="/auth-pics/USTP-LOGO.jpg"
+          alt="USTP Villanueva Logo"
+        >
+
+        <h1 class="system-title">
+          <strong>BahaSumbong:</strong>
+          A Flood Prone Area &amp; Drainage Mapping System
+        </h1>
+
+        <p class="resident-label">Resident</p>
+
+        <p class="welcome-message">
+          Welcome Back! Please login<br>
+          to continue.
+        </p>
+
+      </header>
+
+      <!-- Email and Password Login -->
+      <form
+        class="login-form"
+        (ngSubmit)="loginAsAdmin()"
+      >
+
+        <!-- Email Input -->
+        <label class="visually-hidden" for="login-email">
+          Email
+        </label>
+
+        <input
+          id="login-email"
+          class="login-input"
+          type="email"
+          name="adminEmail"
+          [(ngModel)]="adminEmail"
+          placeholder="Email or username"
+          autocomplete="username"
+          required
+        >
+
+        <!-- Password Input -->
+        <div class="password-field">
+
+          <label class="visually-hidden" for="login-password">
+            Password
+          </label>
+
+          <input
+            id="login-password"
+            class="login-input"
+            [type]="showPassword ? 'text' : 'password'"
+            name="adminPassword"
+            [(ngModel)]="adminPassword"
+            placeholder="Password"
+            autocomplete="current-password"
+            required
+          >
+
+          <!-- Angular Material Password Visibility -->
+          <button
+            class="password-eye"
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [attr.aria-pressed]="showPassword"
+          >
+
+            <mat-icon aria-hidden="true">
+              {{ showPassword ? 'visibility_off' : 'visibility' }}
+            </mat-icon>
+
+          </button>
+
+        </div>
+
+        <!-- Login Options -->
+        <div class="login-options">
+
+
+        </div>
+
+        <!-- Administrator Login Button -->
+        <button
+          class="login-button"
+          type="submit"
+          [disabled]="isSubmitting"
+        >
+          {{ isSubmitting ? 'Signing in...' : 'Login' }}
+        </button>
+
+      </form>
+
+      <!-- Divider -->
+      <div class="login-divider">
+        <span>or</span>
+      </div>
+
+      <!-- Resident Google Login -->
+      <button
+        class="google-button"
+        type="button"
+        (click)="loginWithGoogle()"
+        [disabled]="isSubmitting"
+      >
+
+        <img
+          src="/auth-pics/Google.png"
+          alt=""
+        >
+
+        <span>
+          {{ isSubmitting ? 'Please wait...' : 'Continue with Google' }}
+        </span>
+
+      </button>
+
+      <!-- Error Message -->
+      @if (errorMessage) {
+        <p class="error-message" role="alert">
+          {{ errorMessage }}
+        </p>
+      }
+
+      <!-- Success Message -->
+      @if (successMessage) {
+        <p class="success-message" role="status">
+          {{ successMessage }}
+        </p>
+      }
+
+    </div>
+
+  </section>
+
+</main>

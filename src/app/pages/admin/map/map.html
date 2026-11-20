@@ -1,1 +1,179 @@
-<p>map works!</p>
+
+<section class="admin-map-page">
+
+  <h1>Administrator Report Map</h1>
+
+  <p>
+    View flooding and drainage problem locations
+    reported by community residents.
+  </p>
+
+  <p>
+    Click an orange marker to view the
+    corresponding report information.
+  </p>
+
+  <!-- LEAFLET MAP -->
+
+  <div
+    #mapContainer
+    class="map-container"
+    role="region"
+    aria-label="Administrator community reports map"
+  ></div>
+
+  <hr>
+
+  <!-- FIRESTORE REPORT INFORMATION -->
+
+  <h2>Community Report Locations</h2>
+
+  @if (isLoading()) {
+
+    <p>Loading community report locations...</p>
+
+  } @else if (errorMessage()) {
+
+    <p role="alert">
+      {{ errorMessage() }}
+    </p>
+
+  } @else {
+
+    <p>
+      <strong>Total Community Reports:</strong>
+      {{ totalReports() }}
+    </p>
+
+    <p>
+      <strong>Reports with Map Coordinates:</strong>
+      {{ mappedReports().length }}
+    </p>
+
+    @if (mappedReports().length === 0) {
+
+      <p>
+        No community reports with valid
+        map coordinates are available yet.
+      </p>
+
+    } @else {
+
+      <p>
+        Select any orange marker to inspect
+        the corresponding resident report.
+      </p>
+
+    }
+
+  }
+
+  <hr>
+
+  <!-- SELECTED REPORT DETAILS -->
+
+  @if (selectedReport(); as report) {
+
+    <h2>Selected Community Report</h2>
+
+    <p>
+      <strong>Report ID:</strong>
+      {{ report.id }}
+    </p>
+
+    <p>
+      <strong>Resident ID:</strong>
+      {{ report.residentId }}
+    </p>
+
+    <p>
+      <strong>Problem Type:</strong>
+      {{ report.problemType }}
+    </p>
+
+    <p>
+      <strong>Description:</strong>
+      {{ report.description }}
+    </p>
+
+    <p>
+      <strong>Current Status:</strong>
+      {{ report.status }}
+    </p>
+
+    <p>
+      <strong>Latitude:</strong>
+      {{ report.latitude.toFixed(6) }}
+    </p>
+
+    <p>
+      <strong>Longitude:</strong>
+      {{ report.longitude.toFixed(6) }}
+    </p>
+
+    <p>
+      <strong>Date Submitted:</strong>
+
+      @if (report.createdAt) {
+
+        {{ report.createdAt | date:'medium' }}
+
+      } @else {
+
+        Date unavailable
+
+      }
+
+    </p>
+
+    @if (report.updatedAt) {
+
+      <p>
+        <strong>Last Updated:</strong>
+        {{ report.updatedAt | date:'medium' }}
+      </p>
+
+    }
+
+    <!-- ADMINISTRATOR REPORT MANAGEMENT -->
+
+    <p>
+      <a routerLink="/admin/reports">
+        Go to Report Management
+      </a>
+    </p>
+
+    <button
+      type="button"
+      (click)="clearSelectedReport()"
+    >
+      Clear Selection
+    </button>
+
+  } @else {
+
+    <h3>Selected Report</h3>
+
+    <p>
+      No report selected.
+      Click an orange marker on the map.
+    </p>
+
+  }
+
+  <hr>
+
+  <!-- DISCLAIMER -->
+
+  <p class="map-note">
+    Note: Reported locations are based on
+    resident submissions and have not
+    necessarily been independently verified.
+
+    This map is intended for academic
+    demonstration only.
+    It does not predict flooding or replace
+    official disaster monitoring systems.
+  </p>
+
+</section>

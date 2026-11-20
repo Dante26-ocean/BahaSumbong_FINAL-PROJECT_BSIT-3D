@@ -1,0 +1,52 @@
+
+<h2>Resident Verification Requests</h2>
+
+@if (isLoading) {
+
+  <p>Loading verification requests...</p>
+
+} @else if (errorMessage) {
+
+  <p>{{ errorMessage }}</p>
+
+} @else {
+
+  <h3>Pending Applications: {{ requests.length }}</h3>
+
+  @if (requests.length === 0) {
+
+    <p>No pending verification requests found.</p>
+
+  } @else {
+
+    @for (request of requests; track request.uid) {
+
+      <div>
+        <h3>{{ request.displayName }}</h3>
+
+        <p>Email: {{ request.email }}</p>
+
+        <p>Status: {{ request.status }}</p>
+
+        <p>
+          Submitted:
+          @if (request.submittedAt) {
+            {{ request.submittedAt | date:'MMM d, y, h:mm a' }}
+          } @else {
+            Date unavailable
+          }
+        </p>
+
+        <!-- Open the selected resident's details -->
+        <a [routerLink]="['/admin/user-details', request.uid]">
+          View Resident Details
+        </a>
+
+        <hr>
+      </div>
+
+    }
+
+  }
+
+}

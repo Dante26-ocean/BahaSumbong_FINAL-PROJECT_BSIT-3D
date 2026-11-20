@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+
+/* =========================================
+   LEAFLET MAP STYLES
+   ========================================= */
+
+/* Required for Leaflet map tiles,
+   zoom controls, markers, and popups */
+@import 'leaflet/dist/leaflet.css';
+
+
+/* =========================================
+   GLOBAL PAGE RESET
+   ========================================= */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+app-root {
+  display: block;
+  min-height: 100dvh;
+}

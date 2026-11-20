@@ -1,1 +1,126 @@
-<p>dashboard works!</p>
+
+<h1>Community Dashboard</h1>
+
+<!-- RESIDENT INFORMATION -->
+
+@if (isLoading()) {
+
+  <p>Loading resident information...</p>
+
+} @else if (errorMessage()) {
+
+  <p role="alert">
+    {{ errorMessage() }}
+  </p>
+
+} @else if (resident(); as profile) {
+
+  <h2>
+    Welcome, {{ profile.displayName }}!
+  </h2>
+
+  <p>
+    Email: {{ profile.email }}
+  </p>
+
+  <p>
+    Verification Status:
+    {{ profile.verificationStatus }}
+  </p>
+
+  <hr>
+
+  <!-- REPORT STATISTICS -->
+
+  <h2>My Report Statistics</h2>
+
+  @if (reportsLoading()) {
+
+    <p>Loading report statistics...</p>
+
+  } @else if (reportsError()) {
+
+    <p role="alert">
+      {{ reportsError() }}
+    </p>
+
+  } @else {
+
+    <p>
+      Total Reports: {{ totalReports() }}
+    </p>
+
+    <p>
+      Pending Reports: {{ pendingReports() }}
+    </p>
+
+    <p>
+      In Progress: {{ inProgressReports() }}
+    </p>
+
+    <p>
+      Resolved Reports: {{ resolvedReports() }}
+    </p>
+
+    <p>
+      Rejected Reports: {{ rejectedReports() }}
+    </p>
+
+    <hr>
+
+    <!-- RECENT REPORTS -->
+
+    <h2>My Recent Reports</h2>
+
+    @if (recentReports().length === 0) {
+
+      <p>
+        You haven't submitted any reports yet.
+      </p>
+
+    } @else {
+
+      @for (report of recentReports(); track report.id) {
+
+        <div>
+
+          <h3>
+            Report ID: {{ report.id }}
+          </h3>
+
+          <p>
+            Problem Type: {{ report.problemType }}
+          </p>
+
+          <p>
+            Description: {{ report.description }}
+          </p>
+
+          <p>
+            Location: {{ report.locationDescription }}
+          </p>
+
+          <p>
+            Status: {{ report.status }}
+          </p>
+
+          <p>
+            Submitted:
+            @if (report.createdAt) {
+              {{ report.createdAt | date:'medium' }}
+            } @else {
+              Date unavailable
+            }
+          </p>
+
+          <hr>
+
+        </div>
+
+      }
+
+    }
+
+  }
+
+}

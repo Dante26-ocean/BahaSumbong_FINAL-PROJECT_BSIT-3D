@@ -1,1 +1,232 @@
-<p>report-details works!</p>
+
+<h1>Report Details</h1>
+
+<p>
+  View the complete information about your
+  submitted community report.
+</p>
+
+<hr>
+
+<!-- =====================================
+     LOADING STATE
+     ===================================== -->
+
+@if (isLoading()) {
+
+  <p>Loading report details...</p>
+
+} @else if (errorMessage()) {
+
+  <p role="alert">
+    {{ errorMessage() }}
+  </p>
+
+} @else if (report(); as currentReport) {
+
+  <!-- =====================================
+       REPORT INFORMATION
+       ===================================== -->
+
+  <h2>
+    Report ID: {{ currentReport.id }}
+  </h2>
+
+  <p>
+    <strong>Problem Type:</strong>
+    {{ currentReport.problemType }}
+  </p>
+
+  <p>
+    <strong>Description:</strong>
+    {{ currentReport.description }}
+  </p>
+
+  <p>
+    <strong>Location:</strong>
+    {{ currentReport.locationDescription }}
+  </p>
+
+  <!-- MAP COORDINATES -->
+
+  @if (
+    currentReport.latitude !== null &&
+    currentReport.longitude !== null
+  ) {
+
+    <p>
+      <strong>Latitude:</strong>
+      {{ currentReport.latitude.toFixed(6) }}
+    </p>
+
+    <p>
+      <strong>Longitude:</strong>
+      {{ currentReport.longitude.toFixed(6) }}
+    </p>
+
+  }
+
+  <hr>
+
+  <!-- =====================================
+       REPORT STATUS
+       ===================================== -->
+
+  <h2>Report Status</h2>
+
+  <p>
+    <strong>Current Status:</strong>
+
+    @switch (currentReport.status) {
+
+      @case ('pending') {
+        Pending
+      }
+
+      @case ('in_progress') {
+        In Progress
+      }
+
+      @case ('resolved') {
+        Resolved
+      }
+
+      @case ('rejected') {
+        Rejected
+      }
+
+      @default {
+        Unknown
+      }
+
+    }
+
+  </p>
+
+  <!-- SUBMISSION DATE -->
+
+  <p>
+    <strong>Date Submitted:</strong>
+
+    @if (currentReport.createdAt) {
+
+      {{ currentReport.createdAt | date:'medium' }}
+
+    } @else {
+
+      Date unavailable
+
+    }
+
+  </p>
+
+  <!-- LAST UPDATED -->
+
+  @if (currentReport.updatedAt) {
+
+    <p>
+      <strong>Last Updated:</strong>
+      {{ currentReport.updatedAt | date:'medium' }}
+    </p>
+
+  }
+
+  <hr>
+
+  <!-- =====================================
+       SUPPORTING REPORT PHOTOS
+       ===================================== -->
+
+  <h2>Supporting Photos</h2>
+
+  <p>
+    <strong>Photos Attached:</strong>
+    {{ currentReport.photoCount }}
+  </p>
+
+  @if (isLoadingPhotos()) {
+
+    <!-- LOADING PHOTOS -->
+
+    <p role="status">
+      Loading protected supporting photos...
+    </p>
+
+  } @else if (photoError()) {
+
+    <!-- PHOTO LOADING ERROR -->
+
+    <p role="alert">
+      {{ photoError() }}
+    </p>
+
+    <button
+      type="button"
+      (click)="retryPhotoLoading()"
+    >
+      Retry Loading Photos
+    </button>
+
+  } @else if (photoUrls().length > 0) {
+
+    <!-- DISPLAY PROTECTED PHOTOS -->
+
+    <div class="supporting-photos">
+
+      @for (
+        photo of photoUrls();
+        track photo.index
+      ) {
+
+        <figure>
+
+          <img
+            [src]="photo.url"
+            [alt]="
+              'Supporting photo ' +
+              (photo.index + 1) +
+              ' for report ' +
+              currentReport.id
+            "
+            loading="lazy"
+            style="
+              max-width: 100%;
+              max-height: 350px;
+              height: auto;
+              object-fit: contain;
+            "
+          >
+
+          <figcaption>
+            Supporting Photo
+            {{ photo.index + 1 }}
+          </figcaption>
+
+        </figure>
+
+      }
+
+    </div>
+
+  } @else {
+
+    <!-- NO PHOTOS AVAILABLE -->
+
+    <p>
+      No supporting photos have been attached
+      to this report.
+    </p>
+
+  }
+
+  <hr>
+
+}
+
+<!-- =====================================
+     BACK NAVIGATION
+     ===================================== -->
+
+<a routerLink="/community/my-reports">
+  Back to My Reports
+</a>
