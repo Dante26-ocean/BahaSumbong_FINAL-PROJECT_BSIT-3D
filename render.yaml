@@ -24,7 +24,7 @@ services:
     # Deploy manually instead of automatically
     autoDeployTrigger: off
 
-    # Non-secret environment settings
+    # Backend environment settings
     envVars:
       - key: NODE_ENV
         value: production
@@ -32,7 +32,9 @@ services:
       - key: FIREBASE_PROJECT_ID
         value: bahasumbong
 
-      # Firebase credentials will be provided
-      # as a private Render secret file later.
+      # Private Firebase Admin SDK file
       - key: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/secrets/bahasumbong-service-account.json
+
+      # Existing Render Environment Group
+      - fromGroup: bahasumbong-backend-secrets
