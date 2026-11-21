@@ -21,6 +21,7 @@ import {
 } from 'firebase/firestore';
 
 import { auth } from '../../../firebase';
+import { buildBackendApiUrl } from '../../../config/backend-api.config';
 
 interface ResidentDetails {
   uid: string;
@@ -43,7 +44,7 @@ export class UserDetails implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
 
   private readonly imageEndpoint =
-    'http://127.0.0.1:3000/api/verification/images';
+    buildBackendApiUrl('/api/verification/images');
 
   private destroyed = false;
 

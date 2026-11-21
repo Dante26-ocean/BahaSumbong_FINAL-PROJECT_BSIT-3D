@@ -2,17 +2,19 @@
 <h1>Community Reports Management</h1>
 
 <p>
-  View and manage flooding and drainage
-  reports submitted by residents.
+  View and manage flooding and drainage reports
+  submitted by residents.
 </p>
 
 <hr>
 
-<!-- LOADING STATE -->
+<!-- LOADING AND ERROR STATES -->
 
 @if (isLoading()) {
 
-  <p>Loading community reports...</p>
+  <p role="status">
+    Loading community reports...
+  </p>
 
 } @else if (errorMessage()) {
 
@@ -22,9 +24,7 @@
 
 } @else {
 
-  <!-- =====================================
-       STATUS UPDATE MESSAGES
-       ===================================== -->
+  <!-- STATUS UPDATE MESSAGES -->
 
   @if (statusSuccess()) {
 
@@ -43,28 +43,103 @@
   }
 
   <!-- =====================================
-       TOTAL COMMUNITY REPORTS
+       REPORT SUBMISSION OVERVIEW
        ===================================== -->
 
-  <h2>
-    Total Community Reports: {{ reports().length }}
-  </h2>
+  <h2>Report Submission Overview</h2>
 
-  @if (reports().length === 0) {
+  <p>
+    <strong>Total Community Reports:</strong>
+    {{ reports().length }}
+  </p>
+
+  <p>
+    <strong>Ready or Legacy-Exempt:</strong>
+    {{ readyForReviewCount() }}
+  </p>
+
+  <p>
+    <strong>Needs Photo Review:</strong>
+    {{ needsAttentionCount() }}
+  </p>
+
+  <p>
+    Note: Older reports without photo records cannot
+    be reliably distinguished from interrupted
+    submissions. These reports remain visible,
+    but their status actions are disabled until
+    their readiness is verified.
+  </p>
+
+  <hr>
+
+  <!-- =====================================
+       STEP 100.2 - FOCUSED REPORT
+       ===================================== -->
+
+  @if (focusedReportId()) {
+
+    <h2>Selected Community Report</h2>
 
     <p>
-      No community reports have been submitted yet.
+      <strong>Report ID:</strong>
+      {{ focusedReportId() }}
     </p>
+
+    <p>
+      Displaying the report selected from
+      Administrator Notifications.
+    </p>
+
+    <p>
+      <a routerLink="/admin/reports">
+        View All Reports
+      </a>
+    </p>
+
+    <hr>
+
+  }
+
+  <!-- =====================================
+       EMPTY STATE
+       ===================================== -->
+
+  @if (displayedReports().length === 0) {
+
+    @if (focusedReportId()) {
+
+      <p role="status">
+        The requested report could not be found
+        in the available community reports.
+      </p>
+
+      <p>
+        <a routerLink="/admin/reports">
+          Return to All Reports
+        </a>
+      </p>
+
+    } @else {
+
+      <p>
+        No community reports have been submitted yet.
+      </p>
+
+    }
 
   } @else {
 
     <!-- =====================================
-         ALL COMMUNITY REPORTS
+         COMMUNITY REPORT LIST
          ===================================== -->
 
     <ul>
 
-      @for (report of reports(); track report.id) {
+      @for (
+        report of displayedReports();
+        track report.id
+      ) {
 
         <li>
 
@@ -92,9 +167,7 @@
             {{ report.locationDescription }}
           </p>
 
-          <!-- =================================
-               CURRENT REPORT STATUS
-               ================================= -->
+          <!-- CURRENT REPORT STATUS -->
 
           <p>
             <strong>Current Status:</strong>
@@ -122,12 +195,41 @@
               }
 
             }
-
           </p>
 
-          <!-- =================================
-               SUBMISSION DATE
-               ================================= -->
+          <!-- SUBMISSION READINESS -->
+
+          <p>
+            <strong>Submission Readiness:</strong>
+
+            @switch (report.reviewReadiness) {
+
+              @case ('ready') {
+                Ready for administrator review
+                (photos attached)
+              }
+
+              @case ('legacy_exempt') {
+                Historical report
+                (explicitly exempted from photo requirement)
+              }
+
+              @case ('needs_photos') {
+                Incomplete: no photos attached
+              }
+
+              @case ('invalid_photos') {
+                Photo references need inspection
+              }
+
+              @case ('unclassified') {
+                Not confirmed: older report or unfinished photo upload
+              }
+
+            }
+          </p>
+
+          <!-- DATE SUBMITTED -->
 
           <p>
             <strong>Date Submitted:</strong>
@@ -144,9 +246,7 @@
 
           </p>
 
-          <!-- =================================
-               LAST UPDATED
-               ================================= -->
+          <!-- LAST UPDATED -->
 
           @if (report.updatedAt) {
 
@@ -193,7 +293,7 @@
           }
 
           <!-- =================================
-               SELECTED PHOTO VIEWER
+               PROTECTED PHOTO VIEWER
                ================================= -->
 
           @if (selectedReportId() === report.id) {
@@ -291,62 +391,74 @@
 
           <h4>Manage Report Status</h4>
 
-          @if (report.status === 'pending') {
-
-            <button
-              type="button"
-              [disabled]="updatingReportId() !== null"
-              (click)="updateReportStatus(
-                report,
-                'in_progress'
-              )"
-            >
-              Mark In Progress
-            </button>
-
-          }
-
-          @if (
-            report.status === 'pending' ||
-            report.status === 'in_progress'
-          ) {
-
-            <button
-              type="button"
-              [disabled]="updatingReportId() !== null"
-              (click)="updateReportStatus(
-                report,
-                'resolved'
-              )"
-            >
-              Mark Resolved
-            </button>
-
-            <button
-              type="button"
-              [disabled]="updatingReportId() !== null"
-              (click)="updateReportStatus(
-                report,
-                'rejected'
-              )"
-            >
-              Reject Report
-            </button>
-
-          } @else if (
-            report.status === 'resolved' ||
-            report.status === 'rejected'
-          ) {
+          @if (!canReview(report)) {
 
             <p>
-              This report has received a final decision.
+              Status changes are unavailable until
+              this report's photo submission is confirmed
+              or a historical exemption is verified.
             </p>
+
+          } @else {
+
+            @if (report.status === 'pending') {
+
+              <button
+                type="button"
+                [disabled]="updatingReportId() !== null"
+                (click)="updateReportStatus(
+                  report,
+                  'in_progress'
+                )"
+              >
+                Mark In Progress
+              </button>
+
+            }
+
+            @if (
+              report.status === 'pending' ||
+              report.status === 'in_progress'
+            ) {
+
+              <button
+                type="button"
+                [disabled]="updatingReportId() !== null"
+                (click)="updateReportStatus(
+                  report,
+                  'resolved'
+                )"
+              >
+                Mark Resolved
+              </button>
+
+              <button
+                type="button"
+                [disabled]="updatingReportId() !== null"
+                (click)="updateReportStatus(
+                  report,
+                  'rejected'
+                )"
+              >
+                Reject Report
+              </button>
+
+            } @else if (
+              report.status === 'resolved' ||
+              report.status === 'rejected'
+            ) {
+
+              <p>
+                This report has received a final decision.
+              </p>
+
+            }
 
           }
 
           @if (updatingReportId() === report.id) {
 
-            <p>
+            <p role="status">
               Updating report status...
             </p>
 

@@ -26,6 +26,7 @@ import {
 } from 'firebase/firestore';
 
 import { auth, db } from '../../../firebase';
+import { buildBackendApiUrl } from '../../../config/backend-api.config';
 
 type ReportStep = 1 | 2 | 3 | 4;
 
@@ -825,9 +826,11 @@ export class CreateReport implements OnInit {
     }
 
     const response = await fetch(
-      'http://127.0.0.1:3000/api/reports/' +
-      encodeURIComponent(reportId) +
-      '/photos',
+      buildBackendApiUrl(
+        '/api/reports/' +
+        encodeURIComponent(reportId) +
+        '/photos'
+      ),
       {
         method: 'POST',
         headers: {

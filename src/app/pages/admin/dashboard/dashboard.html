@@ -98,6 +98,62 @@
     </a>
   </p>
 
+  <p>
+    <a routerLink="/admin/notifications">
+      View Notifications
+    </a>
+  </p>
+
+  <!-- =====================================
+       STEP 103.6 - ADMIN SUPPORT REQUESTS
+       ===================================== -->
+
+  <p>
+    <a routerLink="/admin/support-requests">
+      Manage Support Requests
+    </a>
+  </p>
+
+  <!-- =====================================
+       STEP 99.3 - ADMINISTRATOR PROFILE
+       ===================================== -->
+
+  <p>
+    <a routerLink="/admin/profile">
+      My Profile
+    </a>
+  </p>
+
+  <!-- =====================================
+       ADMINISTRATOR ACCOUNT
+       ===================================== -->
+
+  <h3>Account</h3>
+
+  <button
+    type="button"
+    (click)="signOutAdministrator()"
+    [disabled]="isSigningOut()"
+  >
+    @if (isSigningOut()) {
+
+      Signing Out...
+
+    } @else {
+
+      Sign Out
+
+    }
+  </button>
+
+  @if (signOutError()) {
+
+    <p role="alert">
+      {{ signOutError() }}
+    </p>
+
+  }
+
   <hr>
 
   <!-- =====================================

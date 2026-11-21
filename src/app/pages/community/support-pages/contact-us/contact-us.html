@@ -1,1 +1,659 @@
-<p>contact-us works!</p>
+
+<!-- ====================================== -->
+<!-- BAHASUMBONG CONTACT US -->
+<!-- ====================================== -->
+
+<section class="contact-us-page">
+
+  <!-- ==================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ==================================== -->
+
+  <header class="contact-us-header">
+
+    <h1>
+      <mat-icon aria-hidden="true">
+        contact_support
+      </mat-icon>
+
+      Contact Us
+    </h1>
+
+    <p>
+      Need assistance with BahaSumbong?
+      Submit a support request for the
+      system administrator to review.
+    </p>
+
+    <a routerLink="/community/help-center">
+
+      <mat-icon aria-hidden="true">
+        arrow_back
+      </mat-icon>
+
+      Back to Help Center
+
+    </a>
+
+  </header>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- IMPORTANT INFORMATION -->
+  <!-- ==================================== -->
+
+  <section class="contact-notice">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      Before You Contact Us
+    </h2>
+
+    <p>
+      This form is intended for questions
+      and technical concerns related to
+      the BahaSumbong system.
+    </p>
+
+    <p>
+      BahaSumbong is an academic demonstration
+      project. This form is not an emergency
+      reporting service.
+    </p>
+
+    <p>
+      For immediate flooding emergencies,
+      contact the appropriate local
+      emergency response authorities.
+    </p>
+
+    <p>
+      Do not include passwords, government
+      identification numbers, or other
+      sensitive personal information
+      in your message.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- CONTACT FORM -->
+  <!-- ==================================== -->
+
+  <section class="contact-form-section">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        edit_note
+      </mat-icon>
+
+      Submit a Support Request
+    </h2>
+
+    <p>
+      Complete the required information below.
+    </p>
+
+    <form
+      #contactForm="ngForm"
+      (ngSubmit)="submitContactRequest(contactForm)"
+    >
+
+      <!-- ================================ -->
+      <!-- SUPPORT TOPIC -->
+      <!-- ================================ -->
+
+      <div class="contact-form-field">
+
+        <label for="contactTopic">
+          Support Topic *
+        </label>
+
+        <select
+          id="contactTopic"
+          name="topic"
+          [(ngModel)]="topic"
+          required
+          [disabled]="isSubmitting()"
+          (ngModelChange)="clearFeedback()"
+        >
+
+          @for (item of topics; track item.value) {
+
+            <option [value]="item.value">
+              {{ item.label }}
+            </option>
+
+          }
+
+        </select>
+
+      </div>
+
+      <!-- ================================ -->
+      <!-- SUBJECT -->
+      <!-- ================================ -->
+
+      <div class="contact-form-field">
+
+        <label for="contactSubject">
+          Subject *
+        </label>
+
+        <input
+          id="contactSubject"
+          name="subject"
+          type="text"
+          [(ngModel)]="subject"
+          #subjectControl="ngModel"
+          required
+          minlength="5"
+          maxlength="100"
+          placeholder="Enter the subject of your concern"
+          [disabled]="isSubmitting()"
+          (ngModelChange)="clearFeedback()"
+        >
+
+        <p>
+          {{ subject.length }} / 100 characters
+        </p>
+
+        @if (
+          subjectControl.invalid &&
+          subjectControl.touched
+        ) {
+
+          <p role="alert">
+            Please enter a subject containing
+            at least 5 characters.
+          </p>
+
+        }
+
+      </div>
+
+      <!-- ================================ -->
+      <!-- MESSAGE -->
+      <!-- ================================ -->
+
+      <div class="contact-form-field">
+
+        <label for="contactMessage">
+          Message *
+        </label>
+
+        <textarea
+          id="contactMessage"
+          name="message"
+          [(ngModel)]="message"
+          #messageControl="ngModel"
+          required
+          minlength="10"
+          maxlength="2000"
+          rows="7"
+          placeholder="Describe your question or concern"
+          [disabled]="isSubmitting()"
+          (ngModelChange)="clearFeedback()"
+        ></textarea>
+
+        <p>
+          {{ message.length }} / 2000 characters
+        </p>
+
+        @if (
+          messageControl.invalid &&
+          messageControl.touched
+        ) {
+
+          <p role="alert">
+            Please enter a message containing
+            at least 10 characters.
+          </p>
+
+        }
+
+      </div>
+
+      <!-- ================================ -->
+      <!-- SUBMISSION ERROR -->
+      <!-- ================================ -->
+
+      @if (errorMessage()) {
+
+        <div
+          class="contact-error"
+          role="alert"
+        >
+
+          <mat-icon aria-hidden="true">
+            error_outline
+          </mat-icon>
+
+          <p>
+            {{ errorMessage() }}
+          </p>
+
+        </div>
+
+      }
+
+      <!-- ================================ -->
+      <!-- SUBMISSION SUCCESS -->
+      <!-- ================================ -->
+
+      @if (successMessage()) {
+
+        <div
+          class="contact-success"
+          role="status"
+        >
+
+          <mat-icon aria-hidden="true">
+            check_circle
+          </mat-icon>
+
+          <p>
+            {{ successMessage() }}
+          </p>
+
+          @if (submittedReferenceId()) {
+
+            <p>
+              <strong>Reference ID:</strong>
+              {{ submittedReferenceId() }}
+            </p>
+
+            <p>
+              Keep this reference ID if you
+              need to identify your request.
+            </p>
+
+          }
+
+        </div>
+
+      }
+
+      <!-- ================================ -->
+      <!-- SUBMIT BUTTON -->
+      <!-- ================================ -->
+
+      <button
+        type="submit"
+        [disabled]="
+          isSubmitting() ||
+          contactForm.invalid
+        "
+      >
+
+        @if (isSubmitting()) {
+
+          <mat-icon aria-hidden="true">
+            hourglass_empty
+          </mat-icon>
+
+          Submitting Request...
+
+        } @else {
+
+          <mat-icon aria-hidden="true">
+            send
+          </mat-icon>
+
+          Submit Support Request
+
+        }
+
+      </button>
+
+    </form>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- STEP 103.7 - MY SUPPORT REQUESTS -->
+  <!-- ==================================== -->
+
+  <section
+    class="my-support-requests-section"
+    aria-labelledby="mySupportRequestsHeading"
+  >
+
+    <h2 id="mySupportRequestsHeading">
+
+      <mat-icon aria-hidden="true">
+        history
+      </mat-icon>
+
+      My Support Requests
+
+    </h2>
+
+    <p>
+      Track the support requests you have
+      submitted to BahaSumbong.
+    </p>
+
+    <!-- ================================== -->
+    <!-- LOADING REQUEST HISTORY -->
+    <!-- ================================== -->
+
+    @if (isLoadingRequests()) {
+
+      <p role="status">
+
+        <mat-icon aria-hidden="true">
+          hourglass_empty
+        </mat-icon>
+
+        Loading your support requests...
+
+      </p>
+
+    } @else if (requestsError()) {
+
+      <!-- ================================== -->
+      <!-- REQUEST HISTORY ERROR -->
+      <!-- ================================== -->
+
+      <p role="alert">
+
+        <mat-icon aria-hidden="true">
+          error_outline
+        </mat-icon>
+
+        {{ requestsError() }}
+
+      </p>
+
+    } @else {
+
+      <!-- ================================== -->
+      <!-- RESIDENT REQUEST STATISTICS -->
+      <!-- ================================== -->
+
+      <div class="support-request-statistics">
+
+        <h3>Request Overview</h3>
+
+        <p>
+          <strong>Total Requests:</strong>
+          {{ totalSupportRequests() }}
+        </p>
+
+        <p>
+          <strong>Open:</strong>
+          {{ openSupportRequests() }}
+        </p>
+
+        <p>
+          <strong>In Progress:</strong>
+          {{ inProgressSupportRequests() }}
+        </p>
+
+        <p>
+          <strong>Resolved:</strong>
+          {{ resolvedSupportRequests() }}
+        </p>
+
+      </div>
+
+      <hr>
+
+      <!-- ================================== -->
+      <!-- NO SUBMITTED SUPPORT REQUESTS -->
+      <!-- ================================== -->
+
+      @if (supportRequests().length === 0) {
+
+        <div class="support-requests-empty">
+
+          <mat-icon aria-hidden="true">
+            inbox
+          </mat-icon>
+
+          <h3>No Support Requests Yet</h3>
+
+          <p>
+            You haven't submitted any
+            support requests.
+          </p>
+
+          <p>
+            If you need assistance, use
+            the Contact Us form above.
+          </p>
+
+        </div>
+
+      } @else {
+
+        <!-- ================================ -->
+        <!-- RESIDENT REQUEST HISTORY -->
+        <!-- ================================ -->
+
+        <div class="resident-support-request-list">
+
+          @for (
+            request of supportRequests();
+            track request.id
+          ) {
+
+            <article
+              class="resident-support-request"
+            >
+
+              <h3>
+                {{ request.subject }}
+              </h3>
+
+              <p>
+                <strong>Reference ID:</strong>
+                {{ request.id }}
+              </p>
+
+              <p>
+                <strong>Topic:</strong>
+                {{ getTopicLabel(request.topic) }}
+              </p>
+
+              <!-- ======================== -->
+              <!-- REQUEST STATUS -->
+              <!-- ======================== -->
+
+              <p>
+                <strong>Status:</strong>
+
+                <span
+                  class="support-request-status"
+                  [class.status-open]="
+                    request.status === 'open'
+                  "
+                  [class.status-in-progress]="
+                    request.status === 'in_progress'
+                  "
+                  [class.status-resolved]="
+                    request.status === 'resolved'
+                  "
+                >
+
+                  {{ getStatusLabel(request.status) }}
+
+                </span>
+
+              </p>
+
+              <!-- ======================== -->
+              <!-- STATUS EXPLANATION -->
+              <!-- ======================== -->
+
+              @switch (request.status) {
+
+                @case ('open') {
+
+                  <p>
+                    Your request has been submitted
+                    and is awaiting administrator
+                    review.
+                  </p>
+
+                }
+
+                @case ('in_progress') {
+
+                  <p>
+                    An administrator has marked
+                    your request as in progress.
+                  </p>
+
+                }
+
+                @case ('resolved') {
+
+                  <p>
+                    Your support request has been
+                    marked as resolved.
+                  </p>
+
+                }
+
+                @default {
+
+                  <p>
+                    The current request status
+                    is unavailable.
+                  </p>
+
+                }
+
+              }
+
+              <!-- ======================== -->
+              <!-- ORIGINAL MESSAGE -->
+              <!-- ======================== -->
+
+              <h4>Your Message</h4>
+
+              <p class="support-request-message">
+                {{ request.message }}
+              </p>
+
+              <!-- ======================== -->
+              <!-- SUBMISSION DATE -->
+              <!-- ======================== -->
+
+              <p>
+                <strong>Submitted:</strong>
+
+                @if (request.createdAt) {
+
+                  {{ request.createdAt | date:'medium' }}
+
+                } @else {
+
+                  Date unavailable
+
+                }
+
+              </p>
+
+              <!-- ======================== -->
+              <!-- LAST STATUS UPDATE -->
+              <!-- ======================== -->
+
+              @if (request.updatedAt) {
+
+                <p>
+                  <strong>Last Updated:</strong>
+                  {{ request.updatedAt | date:'medium' }}
+                </p>
+
+              }
+
+              <hr>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+    }
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ADDITIONAL SUPPORT -->
+  <!-- ==================================== -->
+
+  <section class="additional-support-section">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        help_outline
+      </mat-icon>
+
+      Other Ways to Find Help
+    </h2>
+
+    <p>
+      You may find the answer to your
+      question in the Help Center
+      or Account and Login support page.
+    </p>
+
+    <nav aria-label="Additional support links">
+
+      <p>
+        <a routerLink="/community/help-center">
+
+          <mat-icon aria-hidden="true">
+            help_center
+          </mat-icon>
+
+          Visit Help Center
+
+        </a>
+      </p>
+
+      <p>
+        <a routerLink="/community/account-and-login">
+
+          <mat-icon aria-hidden="true">
+            manage_accounts
+          </mat-icon>
+
+          Account and Login Support
+
+        </a>
+      </p>
+
+      <p>
+        <a routerLink="/community/dashboard">
+
+          <mat-icon aria-hidden="true">
+            dashboard
+          </mat-icon>
+
+          Return to Community Dashboard
+
+        </a>
+      </p>
+
+    </nav>
+
+  </section>
+
+</section>

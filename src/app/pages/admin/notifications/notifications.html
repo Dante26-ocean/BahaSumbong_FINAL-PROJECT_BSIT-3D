@@ -1,1 +1,335 @@
-<p>notifications works!</p>
+
+<!-- ====================================== -->
+<!-- ADMINISTRATOR NOTIFICATIONS -->
+<!-- ====================================== -->
+
+<section class="admin-notifications-page">
+
+  <h2>Administrator Notifications</h2>
+
+  <p>
+    View pending resident verification requests,
+    newly submitted community reports, and
+    open resident support requests.
+  </p>
+
+  <!-- ==================================== -->
+  <!-- DASHBOARD NAVIGATION -->
+  <!-- ==================================== -->
+
+  <p>
+    <a routerLink="/admin/dashboard">
+      Back to Dashboard
+    </a>
+  </p>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- LOADING STATE -->
+  <!-- ==================================== -->
+
+  @if (isLoading) {
+
+    <div class="notifications-loading">
+
+      <p role="status">
+        Loading administrator notifications...
+      </p>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- UNAUTHORIZED STATE -->
+  <!-- ==================================== -->
+
+  @else if (!isAuthorized) {
+
+    <div class="notifications-unauthorized">
+
+      <p role="alert">
+        {{ errorMessage || 'Administrator access is required.' }}
+      </p>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- ERROR STATE -->
+  <!-- ==================================== -->
+
+  @else if (errorMessage) {
+
+    <div class="notifications-error">
+
+      <p role="alert">
+        {{ errorMessage }}
+      </p>
+
+      <button
+        type="button"
+        (click)="refreshNotifications()"
+      >
+        Try Again
+      </button>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- ADMINISTRATOR NOTIFICATION CONTENT -->
+  <!-- ==================================== -->
+
+  @else {
+
+    <div class="notifications-content">
+
+      <!-- ================================== -->
+      <!-- NOTIFICATION SUMMARY -->
+      <!-- ================================== -->
+
+      <div class="notifications-summary">
+
+        <h3>Notification Summary</h3>
+
+        <p>
+          <strong>Total Pending Notifications:</strong>
+          {{ notifications.length }}
+        </p>
+
+        <p>
+          <strong>Pending Verification Requests:</strong>
+          {{ pendingVerificationCount }}
+        </p>
+
+        <p>
+          <strong>Pending Community Reports:</strong>
+          {{ pendingReportCount }}
+        </p>
+
+        <!-- STEP 106.1 - SUPPORT REQUEST COUNT -->
+
+        <p>
+          <strong>Open Support Requests:</strong>
+          {{ pendingSupportCount }}
+        </p>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- REFRESH NOTIFICATIONS -->
+      <!-- ================================== -->
+
+      <div class="notifications-actions">
+
+        <button
+          type="button"
+          (click)="refreshNotifications()"
+        >
+          Refresh Notifications
+        </button>
+
+      </div>
+
+      <hr>
+
+      <!-- ================================== -->
+      <!-- EMPTY NOTIFICATIONS STATE -->
+      <!-- ================================== -->
+
+      @if (notifications.length === 0) {
+
+        <div class="notifications-empty">
+
+          <h3>No Pending Notifications</h3>
+
+          <p>
+            There are currently no pending
+            resident verification requests,
+            pending community reports, or
+            open support requests.
+          </p>
+
+          <p>
+            New pending items will appear here
+            automatically when they are submitted.
+          </p>
+
+        </div>
+
+      } @else {
+
+        <!-- ================================== -->
+        <!-- NOTIFICATIONS LIST -->
+        <!-- ================================== -->
+
+        <div class="notifications-list">
+
+          <h3>Pending Notifications</h3>
+
+          @for (
+            notification of notifications;
+            track notification.id
+          ) {
+
+            <article
+              class="notification-item"
+              [class.verification-notification]="
+                notification.type === 'verification_request'
+              "
+              [class.report-notification]="
+                notification.type === 'community_report'
+              "
+              [class.support-notification]="
+                notification.type === 'support_request'
+              "
+            >
+
+              <!-- NOTIFICATION TITLE -->
+
+              <div class="notification-title">
+
+                <h4>
+                  {{ notification.title }}
+                </h4>
+
+              </div>
+
+              <!-- NOTIFICATION TYPE -->
+
+              <div class="notification-type">
+
+                <p>
+                  <strong>Type:</strong>
+
+                  @if (
+                    notification.type === 'verification_request'
+                  ) {
+
+                    Resident Verification Request
+
+                  } @else if (
+                    notification.type === 'community_report'
+                  ) {
+
+                    Community Report
+
+                  } @else if (
+                    notification.type === 'support_request'
+                  ) {
+
+                    <mat-icon aria-hidden="true">
+                      support_agent
+                    </mat-icon>
+
+                    Resident Support Request
+
+                  }
+
+                </p>
+
+              </div>
+
+              <!-- NOTIFICATION MESSAGE -->
+
+              <div class="notification-message">
+
+                <p>
+                  {{ notification.message }}
+                </p>
+
+              </div>
+
+              <!-- NOTIFICATION DATE -->
+
+              <div class="notification-date">
+
+                <p>
+                  <strong>Submitted:</strong>
+                  {{ notification.dateText }}
+                </p>
+
+              </div>
+
+              <!-- REFERENCE IDENTIFIER -->
+
+              <div class="notification-reference">
+
+                <p>
+                  <strong>Reference ID:</strong>
+                  {{ notification.referenceId }}
+                </p>
+
+              </div>
+
+              <!-- ================================== -->
+              <!-- DIRECT NOTIFICATION NAVIGATION -->
+              <!-- ================================== -->
+
+              <div class="notification-actions">
+
+                @if (
+                  notification.type === 'verification_request'
+                ) {
+
+                  <a
+                    [routerLink]="[
+                      '/admin/user-details',
+                      notification.referenceId
+                    ]"
+                  >
+                    View Resident Details
+                  </a>
+
+                } @else if (
+                  notification.type === 'community_report'
+                ) {
+
+                  <a
+                    routerLink="/admin/reports"
+                    [queryParams]="{
+                      reportId: notification.referenceId
+                    }"
+                  >
+                    View Community Report
+                  </a>
+
+                } @else if (
+                  notification.type === 'support_request'
+                ) {
+
+                  <!-- STEP 106.1 - SUPPORT INBOX NAVIGATION -->
+
+                  <a routerLink="/admin/support-requests">
+
+                    <mat-icon aria-hidden="true">
+                      support_agent
+                    </mat-icon>
+
+                    Manage Support Request
+
+                  </a>
+
+                }
+
+              </div>
+
+              <hr>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</section>

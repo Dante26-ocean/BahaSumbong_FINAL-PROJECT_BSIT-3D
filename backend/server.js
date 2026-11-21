@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
+
 require('dotenv').config();
 
 const {
@@ -17,31 +18,133 @@ const { getFirestore } = require('firebase-admin/firestore');
 // =========================================
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Allow requests from Angular.
-app.use(cors({
-  origin: 'http://localhost:4200'
-}));
+// Use the hosting provider's port when provided.
+const PORT = Number(process.env.PORT || 3000);
 
-app.use(express.json({ limit: '100kb' }));
+// Keep localhost-only binding during local
+// development unless HOST is explicitly set.
+//
+// In production, listen on all interfaces
+// so the hosting platform can reach the server.
+
+const HOST =
+  process.env.HOST ||
+  (
+    process.env.NODE_ENV === 'production'
+      ? '0.0.0.0'
+      : '127.0.0.1'
+  );
+
+// =========================================
+// CONFIGURABLE CORS ORIGINS
+// =========================================
+
+// Local Angular addresses are allowed by default.
+//
+// When deploying, configure ALLOWED_ORIGINS
+// with the exact HTTPS frontend origin.
+//
+// Multiple origins can be separated by commas.
+
+const defaultOrigins =
+  'http://localhost:4200,http://127.0.0.1:4200';
+
+const allowedOrigins = new Set(
+  (
+    process.env.ALLOWED_ORIGINS ||
+    defaultOrigins
+  )
+    .split(',')
+    .map(origin => origin.trim().replace(/\/$/, ''))
+    .filter(origin => origin.length > 0)
+);
+
+// =========================================
+// CORS MIDDLEWARE
+// =========================================
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+
+      // Permit requests without an Origin header,
+      // such as requests from server-side tools.
+      //
+      // Authentication checks still apply
+      // to protected endpoints.
+
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      // Permit only configured browser origins.
+      if (allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // Do not grant cross-origin browser access
+      // to unconfigured frontend origins.
+
+      callback(null, false);
+    }
+  })
+);
+
+// =========================================
+// REQUEST BODY CONFIGURATION
+// =========================================
+
+app.use(
+  express.json({
+    limit: '100kb'
+  })
+);
 
 // =========================================
 // FIREBASE ADMIN SDK CONFIGURATION
 // =========================================
 
-// Firebase service account location.
-const keyPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+// Keep the original Firebase project ID as
+// the default for local development.
 
-if (!keyPath || !fs.existsSync(keyPath)) {
-  console.error('Firebase service account file not found.');
+const FIREBASE_PROJECT_ID =
+  process.env.FIREBASE_PROJECT_ID ||
+  'bahasumbong';
+
+// Local development can use the existing
+// GOOGLE_APPLICATION_CREDENTIALS file.
+//
+// Supported cloud hosting environments may
+// provide application-default credentials
+// automatically without a local JSON file.
+
+const keyPath =
+  process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+// If a credentials path is explicitly configured,
+// verify that the specified file exists.
+
+if (keyPath && !fs.existsSync(keyPath)) {
+
+  console.error(
+    'Configured Firebase service account file not found.'
+  );
+
   process.exit(1);
 }
 
 // Initialize Firebase Admin SDK.
+//
+// applicationDefault() uses the configured
+// local credentials or the hosting environment's
+// supported default credentials.
+
 initializeApp({
   credential: applicationDefault(),
-  projectId: 'bahasumbong'
+  projectId: FIREBASE_PROJECT_ID
 });
 
 // =========================================
@@ -75,10 +178,11 @@ async function verifyFirebaseToken(req, res, next) {
 
   try {
 
-    const decodedToken = await getAuth().verifyIdToken(
-      token,
-      true
-    );
+    const decodedToken =
+      await getAuth().verifyIdToken(
+        token,
+        true
+      );
 
     req.firebaseUser = decodedToken;
 
@@ -155,7 +259,10 @@ app.get(
 
       const role = userData.role;
 
-      if (role !== 'resident' && role !== 'admin') {
+      if (
+        role !== 'resident' &&
+        role !== 'admin'
+      ) {
 
         return res.status(403).json({
           status: 'error',
@@ -229,7 +336,7 @@ app.use(
 );
 
 // =========================================
-// NEW: PROTECTED REPORT PHOTO VIEWER
+// EXISTING PROTECTED REPORT PHOTO VIEWER
 // =========================================
 
 // Allow authorized residents and administrators
@@ -253,16 +360,27 @@ async function startServer() {
 
   try {
 
+    // Confirm that Firebase Admin SDK
+    // can communicate with Firebase Auth.
+
     await getAuth().listUsers(1);
 
     console.log(
       'Firebase Admin SDK connected successfully!'
     );
 
-    app.listen(PORT, '127.0.0.1', () => {
+    // Use the configured host and port.
+    //
+    // Local default:
+    // 127.0.0.1:3000
+    //
+    // Production default:
+    // 0.0.0.0:<PORT>
+
+    app.listen(PORT, HOST, () => {
 
       console.log(
-        `BahaSumbong backend running on port ${PORT}`
+        `BahaSumbong backend running on ${HOST}:${PORT}`
       );
 
     });

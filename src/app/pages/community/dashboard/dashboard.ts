@@ -8,6 +8,9 @@ import {
 } from '@angular/core';
 
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
+
+import { signOut } from 'firebase/auth';
 
 import {
   collection,
@@ -22,11 +25,19 @@ import {
 
 import { auth, db } from '../../../firebase';
 
+// =========================================
+// RESIDENT PROFILE STRUCTURE
+// =========================================
+
 interface ResidentProfile {
   displayName: string;
   email: string;
   verificationStatus: string;
 }
+
+// =========================================
+// RESIDENT REPORT STRUCTURE
+// =========================================
 
 interface ResidentReport {
   id: string;
@@ -45,17 +56,30 @@ interface ResidentReport {
 })
 export class Dashboard implements OnInit, OnDestroy {
 
-  // Resident information
+  // =========================================
+  // RESIDENT INFORMATION
+  // =========================================
+
   readonly isLoading = signal(true);
   readonly errorMessage = signal('');
-  readonly resident = signal<ResidentProfile | null>(null);
 
-  // Firestore reports
+  readonly resident = signal<ResidentProfile | null>(
+    null
+  );
+
+  // =========================================
+  // FIRESTORE REPORTS
+  // =========================================
+
   readonly reports = signal<ResidentReport[]>([]);
+
   readonly reportsLoading = signal(true);
   readonly reportsError = signal('');
 
-  // Dashboard statistics
+  // =========================================
+  // REPORT STATISTICS
+  // =========================================
+
   readonly totalReports = computed(
     () => this.reports().length
   );
@@ -89,24 +113,50 @@ export class Dashboard implements OnInit, OnDestroy {
     () => this.reports().slice(0, 5)
   );
 
-  // Store the Firestore listener for cleanup.
+  // =========================================
+  // RESIDENT SIGN-OUT STATES
+  // =========================================
+
+  readonly isSigningOut = signal(false);
+  readonly signOutError = signal('');
+
+  // =========================================
+  // FIRESTORE LISTENER
+  // =========================================
+
   private unsubscribeReports: Unsubscribe | null = null;
+
   private destroyed = false;
+
+  constructor(
+    private readonly router: Router
+  ) {}
+
+  // =========================================
+  // COMPONENT INITIALIZATION
+  // =========================================
 
   ngOnInit(): void {
     void this.initializeDashboard();
   }
 
   ngOnDestroy(): void {
+
     this.destroyed = true;
+
     this.unsubscribeReports?.();
+    this.unsubscribeReports = null;
+
   }
+
+  // =========================================
+  // INITIALIZE COMMUNITY DASHBOARD
+  // =========================================
 
   private async initializeDashboard(): Promise<void> {
 
     try {
 
-      // Wait for Firebase Authentication.
       await auth.authStateReady();
 
       if (this.destroyed) {
@@ -116,35 +166,47 @@ export class Dashboard implements OnInit, OnDestroy {
       const currentUser = auth.currentUser;
 
       if (!currentUser) {
+
         this.errorMessage.set(
           'Please sign in to continue.'
         );
+
         return;
       }
 
-      // Retrieve the resident's Firestore profile.
+      // =====================================
+      // RETRIEVE RESIDENT PROFILE
+      // =====================================
+
       const userRef = doc(
         db,
         'users',
         currentUser.uid
       );
 
-      const userSnap = await getDocFromServer(userRef);
+      const userSnap = await getDocFromServer(
+        userRef
+      );
 
       if (this.destroyed) {
         return;
       }
 
       if (!userSnap.exists()) {
+
         this.errorMessage.set(
           'Resident profile not found.'
         );
+
         return;
       }
 
       const userData = userSnap.data();
 
-      // Verify resident role and approval status.
+      // =====================================
+      // VERIFY RESIDENT ACCOUNT
+      // =====================================
+
       if (
         userData['role'] !== 'resident' ||
         userData['verificationStatus'] !== 'approved'
@@ -157,20 +219,46 @@ export class Dashboard implements OnInit, OnDestroy {
         return;
       }
 
-      // Preserve resident information functionality.
+      // =====================================
+      // READ DISPLAY NAME FROM FIRESTORE
+      // =====================================
+
+      const firestoreDisplayName =
+        typeof userData['displayName'] === 'string'
+          ? userData['displayName'].trim()
+          : '';
+
+      const googleDisplayName =
+        currentUser.displayName?.trim() || '';
+
+      const displayName =
+        firestoreDisplayName ||
+        googleDisplayName ||
+        'Resident';
+
+      // =====================================
+      // STORE RESIDENT INFORMATION
+      // =====================================
+
       this.resident.set({
-        displayName:
-          currentUser.displayName?.trim() || 'Resident',
+
+        displayName,
 
         email:
           currentUser.email || 'No email available',
 
         verificationStatus:
           userData['verificationStatus']
+
       });
 
-      // Start retrieving this resident's reports.
-      this.subscribeToResidentReports(currentUser.uid);
+      // =====================================
+      // LOAD RESIDENT REPORTS
+      // =====================================
+
+      this.subscribeToResidentReports(
+        currentUser.uid
+      );
 
     } catch (error) {
 
@@ -180,9 +268,11 @@ export class Dashboard implements OnInit, OnDestroy {
       );
 
       if (!this.destroyed) {
+
         this.errorMessage.set(
           'Unable to load your account information.'
         );
+
       }
 
     } finally {
@@ -195,6 +285,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   }
 
+  // =========================================
+  // REAL-TIME RESIDENT REPORTS
+  // =========================================
+
   private subscribeToResidentReports(
     residentId: string
   ): void {
@@ -202,13 +296,14 @@ export class Dashboard implements OnInit, OnDestroy {
     this.reportsLoading.set(true);
     this.reportsError.set('');
 
-    // Retrieve only reports owned by this resident.
     const reportsQuery = query(
+
       collection(db, 'reports'),
+
       where('residentId', '==', residentId)
+
     );
 
-    // Listen for real-time Firestore changes.
     this.unsubscribeReports = onSnapshot(
 
       reportsQuery,
@@ -223,10 +318,10 @@ export class Dashboard implements OnInit, OnDestroy {
           snapshot.docs.map((reportDoc) => {
 
             const data = reportDoc.data();
-
             const createdAtValue = data['createdAt'];
 
             return {
+
               id: reportDoc.id,
 
               problemType:
@@ -245,21 +340,27 @@ export class Dashboard implements OnInit, OnDestroy {
                 createdAtValue instanceof Timestamp
                   ? createdAtValue.toDate()
                   : null
+
             };
 
           });
 
-        // Sort newest reports first.
+        // =====================================
+        // SORT NEWEST REPORTS FIRST
+        // =====================================
+
         residentReports.sort((a, b) => {
 
-          const dateA = a.createdAt?.getTime() ?? 0;
-          const dateB = b.createdAt?.getTime() ?? 0;
+          const dateA =
+            a.createdAt?.getTime() ?? 0;
+
+          const dateB =
+            b.createdAt?.getTime() ?? 0;
 
           return dateB - dateA;
 
         });
 
-        // Update reports and dashboard statistics.
         this.reports.set(residentReports);
 
         this.reportsLoading.set(false);
@@ -288,6 +389,148 @@ export class Dashboard implements OnInit, OnDestroy {
       }
 
     );
+
+  }
+
+  // =========================================
+  // COMMUNITY NOTIFICATIONS NAVIGATION
+  // =========================================
+
+  goToNotifications(): void {
+
+    void this.router.navigate([
+      '/community/notifications'
+    ]);
+
+  }
+
+  // =========================================
+  // COMMUNITY PROFILE NAVIGATION
+  // =========================================
+
+  goToProfile(): void {
+
+    void this.router.navigate([
+      '/community/profile'
+    ]);
+
+  }
+
+  // =========================================
+  // CREATE REPORT NAVIGATION
+  // =========================================
+
+  goToCreateReport(): void {
+
+    void this.router.navigate([
+      '/community/create-report'
+    ]);
+
+  }
+
+  // =========================================
+  // MY REPORTS NAVIGATION
+  // =========================================
+
+  goToMyReports(): void {
+
+    void this.router.navigate([
+      '/community/my-reports'
+    ]);
+
+  }
+
+  // =========================================
+  // COMMUNITY MAP NAVIGATION
+  // =========================================
+
+  goToCommunityMap(): void {
+
+    void this.router.navigate([
+      '/community/map'
+    ]);
+
+  }
+
+  // =========================================
+  // STEP 101.4 - HELP CENTER NAVIGATION
+  // =========================================
+
+  goToHelpCenter(): void {
+
+    void this.router.navigate([
+      '/community/help-center'
+    ]);
+
+  }
+
+  // =========================================
+  // RESIDENT SIGN OUT
+  // =========================================
+
+  async signOutResident(): Promise<void> {
+
+    if (this.isSigningOut()) {
+      return;
+    }
+
+    this.isSigningOut.set(true);
+    this.signOutError.set('');
+
+    try {
+
+      await signOut(auth);
+
+      this.unsubscribeReports?.();
+      this.unsubscribeReports = null;
+
+    } catch (error) {
+
+      console.error(
+        'Resident sign-out failed:',
+        error
+      );
+
+      if (!this.destroyed) {
+
+        this.signOutError.set(
+          'Unable to sign out. Please try again.'
+        );
+
+        this.isSigningOut.set(false);
+
+      }
+
+      return;
+
+    }
+
+    try {
+
+      await this.router.navigate(['/login']);
+
+    } catch (error) {
+
+      console.error(
+        'Unable to navigate to login:',
+        error
+      );
+
+      if (!this.destroyed) {
+
+        this.signOutError.set(
+          'You have been signed out, but the login page could not be opened.'
+        );
+
+      }
+
+    } finally {
+
+      if (!this.destroyed) {
+        this.isSigningOut.set(false);
+      }
+
+    }
 
   }
 

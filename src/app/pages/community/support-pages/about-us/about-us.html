@@ -1,1 +1,520 @@
-<p>about-us works!</p>
+
+<!-- ====================================== -->
+<!-- BAHASUMBONG ABOUT US PAGE -->
+<!-- ====================================== -->
+
+<section class="about-us-page">
+
+  <!-- ==================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ==================================== -->
+
+  <header class="about-us-header">
+
+    <h1>
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      About Us
+    </h1>
+
+    <p>
+      Learn more about BahaSumbong,
+      its purpose, features, and limitations.
+    </p>
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        arrow_back
+      </mat-icon>
+
+      Back to Dashboard
+
+    </a>
+
+  </header>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- SYSTEM INTRODUCTION -->
+  <!-- ==================================== -->
+
+  <section class="system-introduction">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        water_drop
+      </mat-icon>
+
+      {{ systemName }}
+    </h2>
+
+    <h3>
+      {{ systemFullName }}
+    </h3>
+
+    <p>
+      {{ systemDescription }}
+    </p>
+
+    <p>
+      The system is developed as an academic
+      project to demonstrate how web-based
+      technology can support community reporting
+      and organization of flood and drainage
+      information.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- SYSTEM OBJECTIVE -->
+  <!-- ==================================== -->
+
+  <section class="system-objective">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        flag
+      </mat-icon>
+
+      Our Objective
+    </h2>
+
+    <p>
+      {{ systemObjective }}
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- SYSTEM FEATURES -->
+  <!-- ==================================== -->
+
+  <section
+    class="system-features"
+    aria-labelledby="systemFeaturesHeading"
+  >
+
+    <h2 id="systemFeaturesHeading">
+
+      <mat-icon aria-hidden="true">
+        dashboard
+      </mat-icon>
+
+      What BahaSumbong Can Do
+
+    </h2>
+
+    <p>
+      BahaSumbong provides the following
+      features to approved community residents.
+    </p>
+
+    <div class="system-feature-list">
+
+      @for (
+        feature of features;
+        track feature.title
+      ) {
+
+        <article class="system-feature-item">
+
+          <h3>
+
+            <mat-icon aria-hidden="true">
+              {{ feature.icon }}
+            </mat-icon>
+
+            {{ feature.title }}
+
+          </h3>
+
+          <p>
+            {{ feature.description }}
+          </p>
+
+          <a [routerLink]="feature.route">
+
+            {{ feature.routeLabel }}
+
+            <mat-icon aria-hidden="true">
+              arrow_forward
+            </mat-icon>
+
+          </a>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- HOW THE SYSTEM WORKS -->
+  <!-- ==================================== -->
+
+  <section class="system-process">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        account_tree
+      </mat-icon>
+
+      How BahaSumbong Works
+    </h2>
+
+    <ol>
+
+      <li>
+
+        <h3>Resident Account Verification</h3>
+
+        <p>
+          Residents sign in using Google
+          and complete account verification.
+          An administrator reviews their
+          verification request.
+        </p>
+
+      </li>
+
+      <li>
+
+        <h3>Community Report Submission</h3>
+
+        <p>
+          Approved residents select a location,
+          identify the flooding or drainage
+          problem, describe the concern,
+          and attach supporting photos.
+        </p>
+
+      </li>
+
+      <li>
+
+        <h3>Administrator Report Review</h3>
+
+        <p>
+          Authorized administrators examine
+          submitted reports and their
+          supporting information.
+        </p>
+
+      </li>
+
+      <li>
+
+        <h3>Report Status Updates</h3>
+
+        <p>
+          Administrators can update report
+          statuses based on their review.
+          Residents can check the updated
+          statuses through My Reports
+          and Notifications.
+        </p>
+
+      </li>
+
+      <li>
+
+        <h3>Community Mapping</h3>
+
+        <p>
+          Reports with valid geographic
+          coordinates can be displayed
+          on the interactive map.
+        </p>
+
+      </li>
+
+    </ol>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- USER ROLES -->
+  <!-- ==================================== -->
+
+  <section
+    class="system-user-roles"
+    aria-labelledby="userRolesHeading"
+  >
+
+    <h2 id="userRolesHeading">
+
+      <mat-icon aria-hidden="true">
+        groups
+      </mat-icon>
+
+      Who Uses BahaSumbong?
+
+    </h2>
+
+    <div class="system-role-list">
+
+      @for (
+        role of userRoles;
+        track role.title
+      ) {
+
+        <article class="system-role-item">
+
+          <h3>
+
+            <mat-icon aria-hidden="true">
+              {{ role.icon }}
+            </mat-icon>
+
+            {{ role.title }}
+
+          </h3>
+
+          <p>
+            {{ role.description }}
+          </p>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- DATA SECURITY INFORMATION -->
+  <!-- ==================================== -->
+
+  <section class="system-security">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        security
+      </mat-icon>
+
+      Account and Report Security
+    </h2>
+
+    <p>
+      BahaSumbong uses account authentication
+      and resident verification to control
+      access to community features.
+    </p>
+
+    <p>
+      Residents can access their own
+      submitted reports, while authorized
+      administrators can manage community
+      reporting information.
+    </p>
+
+    <p>
+      Supporting report photos use
+      protected access through the
+      application's backend.
+    </p>
+
+    <p>
+      Users should avoid entering passwords,
+      government identification numbers,
+      or other unnecessary sensitive
+      information in report descriptions
+      and support requests.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- SYSTEM LIMITATIONS -->
+  <!-- ==================================== -->
+
+  <section
+    class="system-limitations"
+    aria-labelledby="systemLimitationsHeading"
+  >
+
+    <h2 id="systemLimitationsHeading">
+
+      <mat-icon aria-hidden="true">
+        warning_amber
+      </mat-icon>
+
+      System Limitations
+
+    </h2>
+
+    <p>
+      BahaSumbong has important limitations
+      that users should understand.
+    </p>
+
+    <ul>
+
+      @for (
+        limitation of limitations;
+        track limitation
+      ) {
+
+        <li>
+          {{ limitation }}
+        </li>
+
+      }
+
+    </ul>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ACADEMIC DEMONSTRATION DISCLAIMER -->
+  <!-- ==================================== -->
+
+  <section class="academic-disclaimer">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        school
+      </mat-icon>
+
+      Academic Demonstration Project
+    </h2>
+
+    <p>
+      BahaSumbong is developed for
+      academic presentation and
+      demonstration purposes.
+    </p>
+
+    <p>
+      It is not an officially deployed
+      government reporting platform.
+      It does not provide official
+      emergency announcements,
+      flood predictions, or
+      disaster response services.
+    </p>
+
+    <p>
+      During actual emergencies,
+      residents should follow information
+      and instructions from appropriate
+      local government and emergency
+      response authorities.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- HELP AND CONTACT -->
+  <!-- ==================================== -->
+
+  <section class="about-support-section">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        support_agent
+      </mat-icon>
+
+      Need Help?
+    </h2>
+
+    <p>
+      If you have questions about
+      using BahaSumbong, visit the
+      Help Center or submit a support request.
+    </p>
+
+    <p>
+      <a routerLink="/community/help-center">
+
+        <mat-icon aria-hidden="true">
+          help_outline
+        </mat-icon>
+
+        Visit Help Center
+
+      </a>
+    </p>
+
+    <p>
+      <a routerLink="/community/contact-us">
+
+        <mat-icon aria-hidden="true">
+          contact_support
+        </mat-icon>
+
+        Contact Us
+
+      </a>
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- FOOTER NAVIGATION -->
+  <!-- ==================================== -->
+
+  <nav
+    class="about-us-navigation"
+    aria-label="About Us navigation"
+  >
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        home
+      </mat-icon>
+
+      Dashboard
+
+    </a>
+
+    <a routerLink="/community/map">
+
+      <mat-icon aria-hidden="true">
+        map
+      </mat-icon>
+
+      Community Map
+
+    </a>
+
+    <a routerLink="/community/help-center">
+
+      <mat-icon aria-hidden="true">
+        help_outline
+      </mat-icon>
+
+      Help Center
+
+    </a>
+
+  </nav>
+
+</section>

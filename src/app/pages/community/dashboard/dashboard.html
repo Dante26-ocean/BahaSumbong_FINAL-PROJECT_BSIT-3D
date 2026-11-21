@@ -1,7 +1,9 @@
 
 <h1>Community Dashboard</h1>
 
+<!-- ===================================== -->
 <!-- RESIDENT INFORMATION -->
+<!-- ===================================== -->
 
 @if (isLoading()) {
 
@@ -28,9 +30,93 @@
     {{ profile.verificationStatus }}
   </p>
 
+  <!-- ===================================== -->
+  <!-- COMMUNITY NAVIGATION -->
+  <!-- ===================================== -->
+
+  <h2>Community Actions</h2>
+
+  <button
+    type="button"
+    (click)="goToCreateReport()"
+  >
+    Create Report
+  </button>
+
+  <button
+    type="button"
+    (click)="goToMyReports()"
+  >
+    My Reports
+  </button>
+
+  <button
+    type="button"
+    (click)="goToCommunityMap()"
+  >
+    Community Map
+  </button>
+
+  <button
+    type="button"
+    (click)="goToNotifications()"
+  >
+    My Notifications
+  </button>
+
+  <button
+    type="button"
+    (click)="goToProfile()"
+  >
+    My Profile
+  </button>
+
+  <!-- ===================================== -->
+  <!-- STEP 101.4 - HELP CENTER NAVIGATION -->
+  <!-- ===================================== -->
+
+  <button
+    type="button"
+    (click)="goToHelpCenter()"
+  >
+    Help Center
+  </button>
+
+  <!-- ===================================== -->
+  <!-- RESIDENT ACCOUNT -->
+  <!-- ===================================== -->
+
+  <h3>Account</h3>
+
+  <button
+    type="button"
+    (click)="signOutResident()"
+    [disabled]="isSigningOut()"
+  >
+    @if (isSigningOut()) {
+
+      Signing Out...
+
+    } @else {
+
+      Sign Out
+
+    }
+  </button>
+
+  @if (signOutError()) {
+
+    <p role="alert">
+      {{ signOutError() }}
+    </p>
+
+  }
+
   <hr>
 
+  <!-- ===================================== -->
   <!-- REPORT STATISTICS -->
+  <!-- ===================================== -->
 
   <h2>My Report Statistics</h2>
 
@@ -68,7 +154,9 @@
 
     <hr>
 
+    <!-- ===================================== -->
     <!-- RECENT REPORTS -->
+    <!-- ===================================== -->
 
     <h2>My Recent Reports</h2>
 
@@ -80,7 +168,10 @@
 
     } @else {
 
-      @for (report of recentReports(); track report.id) {
+      @for (
+        report of recentReports();
+        track report.id
+      ) {
 
         <div>
 
@@ -106,11 +197,17 @@
 
           <p>
             Submitted:
+
             @if (report.createdAt) {
+
               {{ report.createdAt | date:'medium' }}
+
             } @else {
+
               Date unavailable
+
             }
+
           </p>
 
           <hr>

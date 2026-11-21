@@ -135,13 +135,31 @@
 
     }
 
-    <!-- ADMINISTRATOR REPORT MANAGEMENT -->
+    <!-- =====================================
+         STEP 100.3
+         DIRECT REPORT MANAGEMENT NAVIGATION
+         ===================================== -->
+
+    <h3>Administrator Report Management</h3>
 
     <p>
-      <a routerLink="/admin/reports">
-        Go to Report Management
+      Open this specific report to review
+      its supporting photos and manage
+      its current status.
+    </p>
+
+    <p>
+      <a
+        routerLink="/admin/reports"
+        [queryParams]="{
+          reportId: report.id
+        }"
+      >
+        Manage This Report
       </a>
     </p>
+
+    <!-- EXISTING CLEAR SELECTION -->
 
     <button
       type="button"

@@ -1,15 +1,20 @@
+
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "BahaSumbong Node.js backend for Firebase authentication and protected Cloudinary images",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": "24.x"
+  },
   "dependencies": {
     "cloudinary": "^2.11.0",
     "cors": "^2.8.6",

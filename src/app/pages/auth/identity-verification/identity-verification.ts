@@ -20,6 +20,14 @@ import {
 
 import { auth } from '../../../firebase';
 
+// =========================================
+// STEP 106.2.5 - CENTRALIZED BACKEND API
+// =========================================
+
+import {
+  buildBackendApiUrl
+} from '../../../config/backend-api.config';
+
 interface VerificationUploadResponse {
   status?: string;
   message?: string;
@@ -35,9 +43,12 @@ export class IdentityVerification implements OnInit, OnDestroy {
 
   private router = inject(Router);
 
-  // Protected Node.js backend endpoint
+  // =========================================
+  // PROTECTED NODE.JS BACKEND ENDPOINT
+  // =========================================
+
   private readonly uploadEndpoint =
-    'http://127.0.0.1:3000/api/verification/submit';
+    buildBackendApiUrl('/api/verification/submit');
 
   isLoading = true;
   isAllowed = false;

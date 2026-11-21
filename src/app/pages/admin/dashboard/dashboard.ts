@@ -8,7 +8,9 @@ import {
 } from '@angular/core';
 
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+
+import { signOut } from 'firebase/auth';
 
 import {
   collection,
@@ -95,12 +97,23 @@ export class Dashboard implements OnInit, OnDestroy {
   );
 
   // =========================================
+  // STEP 97.1 - SIGN OUT STATES
+  // =========================================
+
+  readonly isSigningOut = signal(false);
+  readonly signOutError = signal('');
+
+  // =========================================
   // FIRESTORE LISTENER
   // =========================================
 
   private unsubscribeReports: Unsubscribe | null = null;
 
   private destroyed = false;
+
+  constructor(
+    private readonly router: Router
+  ) {}
 
   ngOnInit(): void {
     void this.initializeDashboard();
@@ -355,6 +368,56 @@ export class Dashboard implements OnInit, OnDestroy {
       }
 
     );
+
+  }
+
+  // =========================================
+  // STEP 97.1 - ADMINISTRATOR SIGN OUT
+  // =========================================
+
+  async signOutAdministrator(): Promise<void> {
+
+    if (this.isSigningOut()) {
+      return;
+    }
+
+    this.isSigningOut.set(true);
+    this.signOutError.set('');
+
+    try {
+
+      // Sign out the current Firebase user.
+      await signOut(auth);
+
+      // Stop listening for administrator reports.
+      this.unsubscribeReports?.();
+      this.unsubscribeReports = null;
+
+      // Return to the existing login page.
+      await this.router.navigate(['/login']);
+
+    } catch (error) {
+
+      console.error(
+        'Administrator sign-out failed:',
+        error
+      );
+
+      if (!this.destroyed) {
+
+        this.signOutError.set(
+          'Unable to complete sign out. Please try again.'
+        );
+
+      }
+
+    } finally {
+
+      if (!this.destroyed) {
+        this.isSigningOut.set(false);
+      }
+
+    }
 
   }
 

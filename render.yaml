@@ -1,0 +1,38 @@
+
+# ==========================================
+# BAHASUMBONG BACKEND DEPLOYMENT
+# ==========================================
+
+services:
+  - type: web
+    name: bahasumbong-backend
+    runtime: node
+    plan: free
+
+    # Node.js backend folder
+    rootDir: backend
+
+    # Install backend dependencies
+    buildCommand: npm ci
+
+    # Start the Express server
+    startCommand: npm start
+
+    # Existing backend health endpoint
+    healthCheckPath: /api/health
+
+    # Deploy manually instead of automatically
+    autoDeployTrigger: off
+
+    # Non-secret environment settings
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: FIREBASE_PROJECT_ID
+        value: bahasumbong
+
+      # Firebase credentials will be provided
+      # as a private Render secret file later.
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/bahasumbong-service-account.json

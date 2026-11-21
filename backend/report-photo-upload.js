@@ -199,6 +199,23 @@ async function cleanupPhotos(images) {
 }
 
 // =========================================
+// PREVENT PARALLEL CLOUDINARY UPLOADS
+// (ONE NODE.JS SERVER PROCESS)
+// =========================================
+
+// An in-memory lock protects the current
+// single-process academic demo.
+//
+// The Firestore transaction still provides
+// final protection against duplicate
+// photo references.
+//
+// This lock does not coordinate across
+// multiple Node.js server instances.
+
+const activePhotoUploads = new Set();
+
+// =========================================
 // EXPORT REPORT PHOTO ROUTES
 // =========================================
 
@@ -400,11 +417,35 @@ module.exports = function createReportPhotoRoutes(
       const uid = req.firebaseUser.uid;
       const db = getFirestore();
 
+      // =====================================
+      // PREVENT SIMULTANEOUS UPLOADS
+      // =====================================
+
+      // Acquire the lock synchronously before
+      // starting any Cloudinary upload.
+
+      const reportId = req.reportRef.id;
+
+      if (activePhotoUploads.has(reportId)) {
+
+        return res.status(409).json({
+          status: 'error',
+          message:
+            'Photos are already being uploaded for this ' +
+            'report. Please wait before retrying.'
+        });
+      }
+
+      activePhotoUploads.add(reportId);
+
       const uploadedImages = [];
 
       try {
 
-        // Upload each photo as an authenticated asset.
+        // =====================================
+        // UPLOAD PHOTOS TO CLOUDINARY
+        // =====================================
+
         for (const file of files) {
 
           const result = await uploadPhoto(file);
@@ -423,7 +464,10 @@ module.exports = function createReportPhotoRoutes(
           }
         }
 
-        // Store only protected Cloudinary references.
+        // =====================================
+        // PREPARE PROTECTED PHOTO REFERENCES
+        // =====================================
+
         const photoReferences = uploadedImages.map(
           image => ({
             publicId: image.public_id,
@@ -432,9 +476,9 @@ module.exports = function createReportPhotoRoutes(
           })
         );
 
-        // =================================
+        // =====================================
         // RECHECK PERMISSIONS AT COMMIT TIME
-        // =================================
+        // =====================================
 
         await db.runTransaction(async transaction => {
 
@@ -477,6 +521,7 @@ module.exports = function createReportPhotoRoutes(
           // Firebase Admin SDK performs this update.
           // Residents cannot directly modify photo
           // references through Firestore client rules.
+
           transaction.update(req.reportRef, {
 
             reportPhotos: photoReferences,
@@ -487,6 +532,10 @@ module.exports = function createReportPhotoRoutes(
           });
 
         });
+
+        // =====================================
+        // SUCCESS
+        // =====================================
 
         return res.status(201).json({
           status: 'success',
@@ -502,7 +551,13 @@ module.exports = function createReportPhotoRoutes(
           error.message
         );
 
-        // Remove newly uploaded photos if saving fails.
+        // =====================================
+        // CLEAN UP AFTER HANDLED FAILURES
+        // =====================================
+
+        // Remove newly uploaded photos if
+        // saving to Firestore fails.
+
         if (uploadedImages.length > 0) {
           await cleanupPhotos(uploadedImages);
         }
@@ -517,6 +572,21 @@ module.exports = function createReportPhotoRoutes(
               ? 'This report can no longer accept photos.'
               : 'Unable to save report photos.'
         });
+
+      } finally {
+
+        // =====================================
+        // RELEASE UPLOAD LOCK
+        // =====================================
+
+        // Release the lock after success or
+        // a handled error.
+
+        // A server restart clears these locks.
+        // This implementation does not provide
+        // cross-process or crash recovery locks.
+
+        activePhotoUploads.delete(reportId);
       }
     }
   );

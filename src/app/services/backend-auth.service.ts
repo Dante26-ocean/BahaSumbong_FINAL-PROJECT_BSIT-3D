@@ -2,6 +2,14 @@
 import { Injectable } from '@angular/core';
 import type { User } from 'firebase/auth';
 
+// =========================================
+// CENTRALIZED BACKEND API CONFIGURATION
+// =========================================
+
+import {
+  buildBackendApiUrl
+} from '../config/backend-api.config';
+
 export interface BackendAuthResponse {
   status: 'success';
   message: string;
@@ -14,8 +22,9 @@ export interface BackendAuthResponse {
 })
 export class BackendAuthService {
 
+  // Use the centralized backend API URL
   private readonly apiUrl =
-    'http://127.0.0.1:3000/api';
+    buildBackendApiUrl('/api');
 
   async verifyUser(user: User): Promise<BackendAuthResponse> {
 

@@ -1,1 +1,374 @@
-<p>account-and-login works!</p>
+
+<!-- ====================================== -->
+<!-- ACCOUNT AND LOGIN SUPPORT PAGE -->
+<!-- ====================================== -->
+
+<section class="account-support-page">
+
+  <!-- ==================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ==================================== -->
+
+  <header class="account-support-header">
+
+    <h1>
+      <mat-icon aria-hidden="true">
+        manage_accounts
+      </mat-icon>
+
+      Account and Login
+    </h1>
+
+    <p>
+      Find information about signing in,
+      verifying your account, and managing
+      your BahaSumbong profile.
+    </p>
+
+    <a routerLink="/community/help-center">
+
+      <mat-icon aria-hidden="true">
+        arrow_back
+      </mat-icon>
+
+      Back to Help Center
+
+    </a>
+
+  </header>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ACCOUNT LOGIN INFORMATION -->
+  <!-- ==================================== -->
+
+  <section class="login-information">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        login
+      </mat-icon>
+
+      How Resident Login Works
+    </h2>
+
+    <p>
+      BahaSumbong allows community residents
+      to sign in using their Google account.
+    </p>
+
+    <p>
+      Residents must complete account verification
+      and receive administrator approval before
+      accessing protected community features.
+    </p>
+
+    <p>
+      Administrator accounts are created separately
+      and do not have public registration.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ACCOUNT VERIFICATION STATUS -->
+  <!-- ==================================== -->
+
+  <section
+    class="account-verification-section"
+    aria-labelledby="verificationHeading"
+  >
+
+    <h2 id="verificationHeading">
+
+      <mat-icon aria-hidden="true">
+        verified_user
+      </mat-icon>
+
+      Account Verification Status
+
+    </h2>
+
+    <p>
+      Your account may have one of the following
+      verification statuses:
+    </p>
+
+    <div class="verification-status-list">
+
+      @for (
+        status of verificationStatuses;
+        track status.label
+      ) {
+
+        <article class="verification-status-item">
+
+          <h3>
+
+            <mat-icon aria-hidden="true">
+              {{ status.icon }}
+            </mat-icon>
+
+            {{ status.label }}
+
+          </h3>
+
+          <p>
+            {{ status.description }}
+          </p>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- FREQUENTLY ASKED QUESTIONS -->
+  <!-- ==================================== -->
+
+  <section
+    class="account-faq-section"
+    aria-labelledby="accountFaqHeading"
+  >
+
+    <h2 id="accountFaqHeading">
+
+      <mat-icon aria-hidden="true">
+        help_outline
+      </mat-icon>
+
+      Frequently Asked Questions
+
+    </h2>
+
+    <p>
+      Select a question to view its answer.
+    </p>
+
+    <div class="account-faq-list">
+
+      @for (
+        question of questions;
+        track question.id
+      ) {
+
+        <article class="account-faq-item">
+
+          <h3>
+
+            <button
+              type="button"
+              class="account-faq-question"
+              [attr.aria-expanded]="
+                isQuestionExpanded(question.id)
+              "
+              [attr.aria-controls]="
+                'account-answer-' + question.id
+              "
+              (click)="toggleQuestion(question.id)"
+            >
+
+              <mat-icon aria-hidden="true">
+                {{ question.icon }}
+              </mat-icon>
+
+              <span>
+                {{ question.question }}
+              </span>
+
+              @if (
+                isQuestionExpanded(question.id)
+              ) {
+
+                <mat-icon aria-hidden="true">
+                  expand_less
+                </mat-icon>
+
+              } @else {
+
+                <mat-icon aria-hidden="true">
+                  expand_more
+                </mat-icon>
+
+              }
+
+            </button>
+
+          </h3>
+
+          <!-- ============================== -->
+          <!-- EXPANDABLE ANSWER -->
+          <!-- ============================== -->
+
+          <div
+            class="account-faq-answer"
+            [id]="'account-answer-' + question.id"
+            [hidden]="!isQuestionExpanded(question.id)"
+          >
+
+            <p>
+              {{ question.answer }}
+            </p>
+
+            @if (
+              question.route &&
+              question.routeLabel
+            ) {
+
+              <a [routerLink]="question.route">
+
+                {{ question.routeLabel }}
+
+                <mat-icon aria-hidden="true">
+                  arrow_forward
+                </mat-icon>
+
+              </a>
+
+            }
+
+          </div>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ACCOUNT MANAGEMENT -->
+  <!-- ==================================== -->
+
+  <section class="account-management-section">
+
+    <h2>
+
+      <mat-icon aria-hidden="true">
+        account_circle
+      </mat-icon>
+
+      Manage Your Account
+
+    </h2>
+
+    <p>
+      You can view your resident account
+      information and update your display name
+      through your existing profile page.
+    </p>
+
+    <a routerLink="/community/profile">
+
+      <mat-icon aria-hidden="true">
+        person
+      </mat-icon>
+
+      My Profile
+
+    </a>
+
+    <p>
+      To sign out, return to your Community
+      Dashboard and select Sign Out.
+    </p>
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        dashboard
+      </mat-icon>
+
+      Community Dashboard
+
+    </a>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ACCOUNT SECURITY REMINDER -->
+  <!-- ==================================== -->
+
+  <section class="account-security-section">
+
+    <h2>
+
+      <mat-icon aria-hidden="true">
+        security
+      </mat-icon>
+
+      Account Security Reminder
+
+    </h2>
+
+    <p>
+      Never share your Google password
+      or sensitive account credentials.
+    </p>
+
+    <p>
+      BahaSumbong is an academic demonstration
+      system. Use only appropriate demonstration
+      information when submitting verification
+      requests or community reports.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- FOOTER NAVIGATION -->
+  <!-- ==================================== -->
+
+  <nav
+    class="account-support-navigation"
+    aria-label="Account support navigation"
+  >
+
+    <a routerLink="/community/help-center">
+
+      <mat-icon aria-hidden="true">
+        help_outline
+      </mat-icon>
+
+      Help Center
+
+    </a>
+
+    <a routerLink="/community/profile">
+
+      <mat-icon aria-hidden="true">
+        manage_accounts
+      </mat-icon>
+
+      My Profile
+
+    </a>
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        home
+      </mat-icon>
+
+      Dashboard
+
+    </a>
+
+  </nav>
+
+</section>

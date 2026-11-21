@@ -26,6 +26,14 @@ import {
 import { auth, db } from '../../../firebase';
 
 // =========================================
+// STEP 106.2.3 - CENTRALIZED BACKEND API
+// =========================================
+
+import {
+  buildBackendApiUrl
+} from '../../../config/backend-api.config';
+
+// =========================================
 // COMMUNITY REPORT STRUCTURE
 // =========================================
 
@@ -460,11 +468,17 @@ export class ReportDetails implements OnInit, OnDestroy {
         index++
       ) {
 
-        const endpoint =
-          'http://127.0.0.1:3000/api/reports/' +
+        // =================================
+        // STEP 106.2.3
+        // CENTRALIZED BACKEND PHOTO URL
+        // =================================
+
+        const endpoint = buildBackendApiUrl(
+          '/api/reports/' +
           encodeURIComponent(reportId) +
           '/photos/' +
-          index;
+          index
+        );
 
         const response = await fetch(
           endpoint,

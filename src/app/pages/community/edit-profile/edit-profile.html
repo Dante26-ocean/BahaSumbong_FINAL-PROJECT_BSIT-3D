@@ -1,1 +1,208 @@
-<p>edit-profile works!</p>
+
+<!-- ====================================== -->
+<!-- COMMUNITY RESIDENT EDIT PROFILE -->
+<!-- ====================================== -->
+
+<section class="edit-profile-page">
+
+  <h2>Edit Profile</h2>
+
+  <!-- ==================================== -->
+  <!-- LOADING STATE -->
+  <!-- ==================================== -->
+
+  @if (isLoading) {
+
+    <p>Loading your profile information...</p>
+
+  } @else if (!isAuthorized) {
+
+    <!-- UNAUTHORIZED OR ERROR STATE -->
+
+    <p role="alert">
+      {{ errorMessage || 'Unable to access your profile.' }}
+    </p>
+
+    <a routerLink="/community/profile">
+      Back to My Profile
+    </a>
+
+  } @else {
+
+    <!-- ================================== -->
+    <!-- PROFILE INFORMATION -->
+    <!-- ================================== -->
+
+    <div class="edit-profile-content">
+
+      <!-- GOOGLE PROFILE PHOTO -->
+
+      <div class="profile-photo">
+
+        @if (photoURL) {
+
+          <img
+            [src]="photoURL"
+            alt="Resident profile photo"
+            width="100"
+            height="100"
+            referrerpolicy="no-referrer"
+          />
+
+        } @else {
+
+          <p>No profile photo available.</p>
+
+        }
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- EDIT PROFILE FORM -->
+      <!-- ================================== -->
+
+      <form
+        (ngSubmit)="saveProfile()"
+        #editProfileForm="ngForm"
+      >
+
+        <h3>Personal Information</h3>
+
+        <!-- DISPLAY NAME -->
+
+        <div class="form-group">
+
+          <label for="displayName">
+            Full Name
+          </label>
+
+          <input
+            type="text"
+            id="displayName"
+            name="displayName"
+            [(ngModel)]="displayName"
+            minlength="2"
+            maxlength="100"
+            required
+            [disabled]="isSaving"
+            #nameInput="ngModel"
+          />
+
+          @if (
+            nameInput.invalid &&
+            (nameInput.dirty || nameInput.touched)
+          ) {
+
+            <p role="alert">
+              Please enter a name containing
+              2 to 100 characters.
+            </p>
+
+          }
+
+        </div>
+
+        <!-- EMAIL ADDRESS -->
+
+        <div class="form-group">
+
+          <label for="email">
+            Email Address
+          </label>
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [value]="email"
+            readonly
+          />
+
+          <p>
+            Your Google account email cannot
+            be changed here.
+          </p>
+
+        </div>
+
+        <!-- VERIFICATION STATUS -->
+
+        <div class="form-group">
+
+          <p>
+            <strong>Verification Status:</strong>
+            {{ verificationStatus }}
+          </p>
+
+        </div>
+
+        <!-- ================================== -->
+        <!-- FEEDBACK MESSAGES -->
+        <!-- ================================== -->
+
+        @if (errorMessage) {
+
+          <p role="alert">
+            {{ errorMessage }}
+          </p>
+
+        }
+
+        @if (successMessage) {
+
+          <p role="status">
+            {{ successMessage }}
+          </p>
+
+        }
+
+        <!-- ================================== -->
+        <!-- FORM ACTIONS -->
+        <!-- ================================== -->
+
+        <div class="form-actions">
+
+          <button
+            type="submit"
+            [disabled]="
+              isSaving ||
+              editProfileForm.invalid ||
+              !displayName.trim()
+            "
+          >
+
+            @if (isSaving) {
+              Saving...
+            } @else {
+              Save Changes
+            }
+
+          </button>
+
+          <button
+            type="button"
+            (click)="resetChanges()"
+            [disabled]="isSaving"
+          >
+            Reset Changes
+          </button>
+
+          <!-- PROFILE NAVIGATION -->
+
+          @if (!isSaving) {
+
+            <a routerLink="/community/profile">
+              Back to My Profile
+            </a>
+
+          }
+
+        </div>
+
+      </form>
+
+    </div>
+
+  }
+
+</section>

@@ -1,1 +1,186 @@
-<p>profile works!</p>
+
+<!-- ====================================== -->
+<!-- ADMINISTRATOR PROFILE -->
+<!-- ====================================== -->
+
+<section class="admin-profile-page">
+
+  <h1>Administrator Profile</h1>
+
+  <p>
+    View your administrator account
+    information in BahaSumbong.
+  </p>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- LOADING STATE -->
+  <!-- ==================================== -->
+
+  @if (isLoading()) {
+
+    <div class="profile-loading">
+
+      <p role="status">
+        Loading administrator profile...
+      </p>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- ERROR STATE -->
+  <!-- ==================================== -->
+
+  @else if (errorMessage()) {
+
+    <div class="profile-error">
+
+      <p role="alert">
+        {{ errorMessage() }}
+      </p>
+
+      <button
+        type="button"
+        (click)="refreshProfile()"
+      >
+        Try Again
+      </button>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- ADMINISTRATOR PROFILE INFORMATION -->
+  <!-- ==================================== -->
+
+  @else if (adminProfile(); as profile) {
+
+    <div class="profile-content">
+
+      <h2>My Account Information</h2>
+
+      <!-- ================================== -->
+      <!-- DISPLAY NAME -->
+      <!-- ================================== -->
+
+      <div class="profile-field">
+
+        <p>
+          <strong>Display Name:</strong>
+          {{ profile.displayName }}
+        </p>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- EMAIL ADDRESS -->
+      <!-- ================================== -->
+
+      <div class="profile-field">
+
+        <p>
+          <strong>Email Address:</strong>
+
+          @if (profile.email) {
+
+            {{ profile.email }}
+
+          } @else {
+
+            Email unavailable
+
+          }
+        </p>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- ACCOUNT ROLE -->
+      <!-- ================================== -->
+
+      <div class="profile-field">
+
+        <p>
+          <strong>Account Role:</strong>
+
+          @if (profile.role === 'admin') {
+
+            Administrator
+
+          }
+
+        </p>
+
+      </div>
+
+      <hr>
+
+      <!-- ================================== -->
+      <!-- ACCOUNT INFORMATION -->
+      <!-- ================================== -->
+
+      <h3>Administrator Account</h3>
+
+      <p>
+        This account is authorized to
+        access administrator features,
+        including resident verification
+        and community report management.
+      </p>
+
+      <p>
+        Administrator accounts are
+        created separately and do not
+        require public registration.
+      </p>
+
+      <hr>
+
+      <!-- ================================== -->
+      <!-- REFRESH PROFILE -->
+      <!-- ================================== -->
+
+      <div class="profile-actions">
+
+        <button
+          type="button"
+          (click)="refreshProfile()"
+        >
+          Refresh Profile
+        </button>
+
+      </div>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- EMPTY PROFILE STATE -->
+  <!-- ==================================== -->
+
+  @else {
+
+    <div class="profile-empty">
+
+      <p>
+        Administrator profile information
+        is currently unavailable.
+      </p>
+
+      <button
+        type="button"
+        (click)="refreshProfile()"
+      >
+        Refresh Profile
+      </button>
+
+    </div>
+
+  }
+
+</section>

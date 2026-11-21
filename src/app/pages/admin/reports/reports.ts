@@ -3,17 +3,23 @@ import {
   Component,
   OnInit,
   OnDestroy,
+  computed,
   signal
 } from '@angular/core';
 
 import { DatePipe } from '@angular/common';
 
 import {
+  ActivatedRoute,
+  RouterLink
+} from '@angular/router';
+
+import {
   collection,
   doc,
   getDocFromServer,
   onSnapshot,
-  updateDoc,
+  runTransaction,
   serverTimestamp,
   Timestamp,
   Unsubscribe
@@ -22,13 +28,28 @@ import {
 import { auth, db } from '../../../firebase';
 
 // =========================================
-// REPORT STATUS
+// STEP 106.2.4 - CENTRALIZED BACKEND API
+// =========================================
+
+import {
+  buildBackendApiUrl
+} from '../../../config/backend-api.config';
+
+// =========================================
+// REPORT STATUS AND READINESS
 // =========================================
 
 type ReportStatus =
   | 'in_progress'
   | 'resolved'
   | 'rejected';
+
+type ReviewReadiness =
+  | 'ready'
+  | 'needs_photos'
+  | 'unclassified'
+  | 'invalid_photos'
+  | 'legacy_exempt';
 
 // =========================================
 // COMMUNITY REPORT STRUCTURE
@@ -44,9 +65,9 @@ interface CommunityReport {
   createdAt: Date | null;
   updatedAt: Date | null;
 
-  // Supporting photos
   photoCount: number;
   photoFingerprint: string;
+  reviewReadiness: ReviewReadiness;
 }
 
 // =========================================
@@ -60,7 +81,7 @@ interface ProtectedPhoto {
 
 @Component({
   selector: 'app-reports',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './reports.html',
   styleUrl: './reports.css',
 })
@@ -76,6 +97,43 @@ export class Reports implements OnInit, OnDestroy {
   readonly errorMessage = signal('');
 
   // =========================================
+  // STEP 100.2 - SELECTED REPORT NAVIGATION
+  // =========================================
+
+  readonly focusedReportId =
+    signal<string | null>(null);
+
+  readonly displayedReports = computed(() => {
+
+    const requestedId = this.focusedReportId();
+
+    if (!requestedId) {
+      return this.reports();
+    }
+
+    return this.reports().filter(
+      report => report.id === requestedId
+    );
+
+  });
+
+  // =========================================
+  // REPORT READINESS STATISTICS
+  // =========================================
+
+  readonly readyForReviewCount = computed(() =>
+    this.reports().filter(
+      report => this.canReview(report)
+    ).length
+  );
+
+  readonly needsAttentionCount = computed(() =>
+    this.reports().filter(
+      report => !this.canReview(report)
+    ).length
+  );
+
+  // =========================================
   // STATUS UPDATE STATES
   // =========================================
 
@@ -86,7 +144,7 @@ export class Reports implements OnInit, OnDestroy {
   readonly statusError = signal('');
 
   // =========================================
-  // SUPPORTING PHOTO STATES
+  // PROTECTED PHOTO STATES
   // =========================================
 
   readonly selectedReportId =
@@ -98,11 +156,9 @@ export class Reports implements OnInit, OnDestroy {
   readonly isLoadingPhotos = signal(false);
   readonly photoError = signal('');
 
-  // Detect changes to supporting photos.
   private selectedPhotoFingerprint: string | null =
     null;
 
-  // Cancel old photo requests.
   private photoAbortController:
     AbortController | null = null;
 
@@ -113,9 +169,44 @@ export class Reports implements OnInit, OnDestroy {
   private unsubscribeReports: Unsubscribe | null =
     null;
 
+  private unsubscribeRoute: {
+    unsubscribe(): void;
+  } | null = null;
+
   private destroyed = false;
 
+  constructor(
+    private readonly route: ActivatedRoute
+  ) {}
+
   ngOnInit(): void {
+
+    // =====================================
+    // READ OPTIONAL REPORT ID FROM URL
+    // =====================================
+
+    this.unsubscribeRoute =
+      this.route.queryParamMap.subscribe(params => {
+
+        const reportId = params.get('reportId');
+
+        const validReportId =
+          reportId &&
+          /^[A-Za-z0-9_-]{1,128}$/.test(reportId)
+            ? reportId
+            : null;
+
+        // Stop any photo viewer associated
+        // with the previous selection.
+        this.clearSelectedReportPhotos();
+
+        this.focusedReportId.set(validReportId);
+
+        this.statusSuccess.set('');
+        this.statusError.set('');
+
+      });
+
     void this.loadAllReports();
   }
 
@@ -123,12 +214,124 @@ export class Reports implements OnInit, OnDestroy {
 
     this.destroyed = true;
 
+    this.unsubscribeRoute?.unsubscribe();
+    this.unsubscribeRoute = null;
+
     this.unsubscribeReports?.();
     this.unsubscribeReports = null;
 
-    // Release protected image resources.
     this.releasePhotoResources();
+  }
 
+  // =========================================
+  // VALIDATE PROTECTED PHOTO REFERENCES
+  // =========================================
+
+  private hasValidPhotoReferences(
+    data: Record<string, unknown>
+  ): boolean {
+
+    const photos = data['reportPhotos'];
+
+    if (
+      !Array.isArray(photos) ||
+      photos.length < 1 ||
+      photos.length > 3
+    ) {
+      return false;
+    }
+
+    return photos.every(photo => {
+
+      if (
+        !photo ||
+        typeof photo !== 'object'
+      ) {
+        return false;
+      }
+
+      const item =
+        photo as Record<string, unknown>;
+
+      return (
+        typeof item['publicId'] === 'string' &&
+        item['publicId'].length > 0 &&
+
+        ['jpg', 'jpeg', 'png'].includes(
+          String(item['format'])
+        ) &&
+
+        item['deliveryType'] === 'authenticated'
+      );
+
+    });
+  }
+
+  // =========================================
+  // DETERMINE REPORT READINESS
+  // =========================================
+
+  private getReviewReadiness(
+    data: Record<string, unknown>
+  ): ReviewReadiness {
+
+    if (this.hasValidPhotoReferences(data)) {
+      return 'ready';
+    }
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        data,
+        'reportPhotos'
+      )
+    ) {
+
+      const photos = data['reportPhotos'];
+
+      return (
+        Array.isArray(photos) &&
+        photos.length === 0
+      )
+        ? 'needs_photos'
+        : 'invalid_photos';
+    }
+
+    // Future compatibility for explicitly reviewed
+    // historical reports that did not require photos.
+    //
+    // Do not automatically exempt old reports.
+    // Missing photos can also mean an interrupted upload.
+
+    if (data['legacyPhotoExempt'] === true) {
+      return 'legacy_exempt';
+    }
+
+    return 'unclassified';
+  }
+
+  // =========================================
+  // CHECK IF ADMIN CAN REVIEW A REPORT
+  // =========================================
+
+  canReview(report: CommunityReport): boolean {
+
+    return (
+      report.reviewReadiness === 'ready' ||
+      report.reviewReadiness === 'legacy_exempt'
+    );
+  }
+
+  private canReviewDocument(
+    data: Record<string, unknown>
+  ): boolean {
+
+    const readiness =
+      this.getReviewReadiness(data);
+
+    return (
+      readiness === 'ready' ||
+      readiness === 'legacy_exempt'
+    );
   }
 
   // =========================================
@@ -155,85 +358,70 @@ export class Reports implements OnInit, OnDestroy {
 
         this.isLoading.set(false);
         return;
-
       }
 
       // =====================================
-      // VERIFY ADMINISTRATOR
+      // VERIFY ADMINISTRATOR PROFILE
       // =====================================
 
-      const adminRef = doc(
-        db,
-        'users',
-        currentUser.uid
+      const adminSnap = await getDocFromServer(
+        doc(
+          db,
+          'users',
+          currentUser.uid
+        )
       );
-
-      const adminSnap =
-        await getDocFromServer(adminRef);
 
       if (this.destroyed) {
         return;
       }
 
-      if (!adminSnap.exists()) {
-
-        this.errorMessage.set(
-          'Administrator account not found.'
-        );
-
-        this.isLoading.set(false);
-        return;
-
-      }
-
-      const adminData = adminSnap.data();
-
       if (
-        adminData['role'] !== 'admin' ||
-        adminData['uid'] !== currentUser.uid
+        !adminSnap.exists() ||
+        adminSnap.data()['role'] !== 'admin' ||
+        adminSnap.data()['uid'] !== currentUser.uid
       ) {
 
         this.errorMessage.set(
-          'You do not have permission to view all reports.'
+          'Administrator access is required.'
         );
 
         this.isLoading.set(false);
         return;
-
       }
 
       // =====================================
-      // LOAD FIRESTORE REPORTS
+      // FIRESTORE REAL-TIME REPORT LISTENER
       // =====================================
-
-      const reportsRef = collection(
-        db,
-        'reports'
-      );
 
       this.unsubscribeReports = onSnapshot(
 
-        reportsRef,
+        collection(db, 'reports'),
 
-        (snapshot) => {
+        snapshot => {
 
           if (this.destroyed) {
             return;
           }
 
           const allReports: CommunityReport[] =
-            snapshot.docs.map((reportDoc) => {
+            snapshot.docs.map(reportDoc => {
 
               const data = reportDoc.data();
 
-              const createdAt = data['createdAt'];
-              const updatedAt = data['updatedAt'];
+              const rawPhotos =
+                data['reportPhotos'];
 
-              // Extract supporting photo metadata.
-              const photoReferences =
-                Array.isArray(data['reportPhotos'])
-                  ? data['reportPhotos']
+              const photos =
+                Array.isArray(rawPhotos)
+                  ? rawPhotos
                   : [];
+
+              const createdAt =
+                data['createdAt'];
+
+              const updatedAt =
+                data['updatedAt'];
 
               return {
 
@@ -274,21 +462,19 @@ export class Reports implements OnInit, OnDestroy {
                     ? updatedAt.toDate()
                     : null,
 
-                // Number of attached photos.
-                photoCount: photoReferences.length,
+                photoCount: photos.length,
 
-                // Identify changes to photo references.
                 photoFingerprint:
-                  JSON.stringify(photoReferences)
+                  JSON.stringify(photos),
+
+                reviewReadiness:
+                  this.getReviewReadiness(data)
 
               };
 
             });
 
-          // =====================================
-          // SORT NEWEST TO OLDEST
-          // =====================================
-
+          // Sort newest first.
           allReports.sort((a, b) => {
 
             const dateA =
@@ -303,35 +489,34 @@ export class Reports implements OnInit, OnDestroy {
 
           this.reports.set(allReports);
 
-          // =====================================
-          // KEEP SELECTED PHOTOS UPDATED
-          // =====================================
+          // =================================
+          // KEEP PHOTO VIEWER UPDATED
+          // =================================
 
           const selectedId =
             this.selectedReportId();
 
           if (selectedId) {
 
-            const selectedReport =
+            const selected =
               allReports.find(
                 report => report.id === selectedId
               );
 
-            if (!selectedReport) {
+            if (!selected) {
 
               this.clearSelectedReportPhotos();
 
             } else if (
-              selectedReport.photoFingerprint !==
+              selected.photoFingerprint !==
               this.selectedPhotoFingerprint
             ) {
 
               this.startProtectedPhotoLoading(
-                selectedReport
+                selected
               );
 
             }
-
           }
 
           this.errorMessage.set('');
@@ -339,7 +524,7 @@ export class Reports implements OnInit, OnDestroy {
 
         },
 
-        (error) => {
+        error => {
 
           if (this.destroyed) {
             return;
@@ -353,20 +538,11 @@ export class Reports implements OnInit, OnDestroy {
           this.reports.set([]);
           this.clearSelectedReportPhotos();
 
-          if (error.code === 'permission-denied') {
-
-            this.errorMessage.set(
-              'Permission denied. Administrator access is required.'
-            );
-
-          } else {
-
-            this.errorMessage.set(
-              'Unable to retrieve community reports. ' +
-              'Please check your connection.'
-            );
-
-          }
+          this.errorMessage.set(
+            error.code === 'permission-denied'
+              ? 'Permission denied. Administrator access is required.'
+              : 'Unable to retrieve reports. Please check your connection.'
+          );
 
           this.isLoading.set(false);
 
@@ -377,39 +553,39 @@ export class Reports implements OnInit, OnDestroy {
     } catch (error) {
 
       console.error(
-        'Error initializing Admin Reports:',
+        'Error initializing administrator reports:',
         error
       );
 
       if (!this.destroyed) {
 
         this.errorMessage.set(
-          'Something went wrong while loading community reports.'
+          'Unable to initialize administrator reports.'
         );
 
         this.isLoading.set(false);
-
       }
-
     }
-
   }
 
   // =========================================
-  // SELECT REPORT SUPPORTING PHOTOS
+  // VIEW SUPPORTING PHOTOS
   // =========================================
 
-  viewReportPhotos(report: CommunityReport): void {
+  viewReportPhotos(
+    report: CommunityReport
+  ): void {
 
-    if (this.destroyed) {
+    if (
+      this.destroyed ||
+      report.photoCount === 0
+    ) {
       return;
     }
 
     this.selectedReportId.set(report.id);
 
-    // Load only the selected report's photos.
     this.startProtectedPhotoLoading(report);
-
   }
 
   // =========================================
@@ -420,17 +596,15 @@ export class Reports implements OnInit, OnDestroy {
     report: CommunityReport
   ): void {
 
-    // Cancel previous downloads and clear images.
     this.releasePhotoResources();
 
     this.selectedPhotoFingerprint =
       report.photoFingerprint;
 
-    if (report.photoCount === 0) {
+    if (report.photoCount < 1) {
       return;
     }
 
-    // The backend supports up to 3 photos.
     if (report.photoCount > 3) {
 
       this.photoError.set(
@@ -438,12 +612,13 @@ export class Reports implements OnInit, OnDestroy {
       );
 
       return;
-
     }
 
-    const controller = new AbortController();
+    const controller =
+      new AbortController();
 
     this.photoAbortController = controller;
+
     this.isLoadingPhotos.set(true);
 
     void this.fetchProtectedPhotos(
@@ -451,7 +626,6 @@ export class Reports implements OnInit, OnDestroy {
       report.photoCount,
       controller
     );
-
   }
 
   // =========================================
@@ -470,18 +644,17 @@ export class Reports implements OnInit, OnDestroy {
 
       await auth.authStateReady();
 
-      const currentUser = auth.currentUser;
+      const currentUser =
+        auth.currentUser;
 
       if (!currentUser) {
 
         throw new Error(
           'Administrator session not found.'
         );
-
       }
 
-      // Obtain Firebase ID token.
-      const firebaseToken =
+      const token =
         await currentUser.getIdToken();
 
       if (
@@ -491,21 +664,24 @@ export class Reports implements OnInit, OnDestroy {
         return;
       }
 
-      // =====================================
-      // DOWNLOAD EACH SUPPORTING PHOTO
-      // =====================================
-
+      // Download each photo individually.
       for (
         let index = 0;
         index < photoCount;
         index++
       ) {
 
-        const endpoint =
-          'http://127.0.0.1:3000/api/reports/' +
+        // =====================================
+        // STEP 106.2.4
+        // CENTRALIZED BACKEND PHOTO URL
+        // =====================================
+
+        const endpoint = buildBackendApiUrl(
+          '/api/reports/' +
           encodeURIComponent(reportId) +
           '/photos/' +
-          index;
+          index
+        );
 
         const response = await fetch(
           endpoint,
@@ -514,7 +690,7 @@ export class Reports implements OnInit, OnDestroy {
 
             headers: {
               Authorization:
-                `Bearer ${firebaseToken}`
+                `Bearer ${token}`
             },
 
             cache: 'no-store',
@@ -530,34 +706,26 @@ export class Reports implements OnInit, OnDestroy {
             '. HTTP ' +
             response.status
           );
-
         }
 
-        // =====================================
-        // VALIDATE RESPONSE CONTENT TYPE
-        // =====================================
-
-        const contentType =
-          response.headers
-            .get('content-type')
-            ?.split(';')[0]
-            .trim()
-            .toLowerCase();
+        // Validate the response content type.
+        const type = response.headers
+          .get('content-type')
+          ?.split(';')[0]
+          .trim()
+          .toLowerCase();
 
         if (
-          contentType !== 'image/jpeg' &&
-          contentType !== 'image/png'
+          type !== 'image/jpeg' &&
+          type !== 'image/png'
         ) {
 
           throw new Error(
             'The backend returned an invalid image type.'
           );
-
         }
 
-        // Convert response to image Blob.
-        const imageBlob =
-          await response.blob();
+        const blob = await response.blob();
 
         if (
           controller.signal.aborted ||
@@ -567,25 +735,19 @@ export class Reports implements OnInit, OnDestroy {
         }
 
         if (
-          imageBlob.size === 0 ||
-          imageBlob.size > 5 * 1024 * 1024
+          blob.size < 1 ||
+          blob.size > 5 * 1024 * 1024
         ) {
 
           throw new Error(
             'The downloaded image has an invalid size.'
           );
-
         }
-
-        // Create temporary local browser URL.
-        const imageUrl =
-          URL.createObjectURL(imageBlob);
 
         loadedPhotos.push({
           index,
-          url: imageUrl
+          url: URL.createObjectURL(blob)
         });
-
       }
 
       if (
@@ -595,10 +757,9 @@ export class Reports implements OnInit, OnDestroy {
         return;
       }
 
-      // All photos successfully downloaded.
       this.photoUrls.set([...loadedPhotos]);
 
-      // URLs are now owned by component state.
+      // Component now owns the object URLs.
       loadedPhotos.length = 0;
 
       this.photoError.set('');
@@ -639,20 +800,18 @@ export class Reports implements OnInit, OnDestroy {
         if (!this.destroyed) {
           this.isLoadingPhotos.set(false);
         }
-
       }
-
     }
-
   }
 
   // =========================================
-  // RETRY PHOTO LOADING
+  // RETRY LOADING SUPPORTING PHOTOS
   // =========================================
 
   retryPhotoLoading(): void {
 
-    const reportId = this.selectedReportId();
+    const reportId =
+      this.selectedReportId();
 
     if (!reportId) {
       return;
@@ -662,38 +821,34 @@ export class Reports implements OnInit, OnDestroy {
       item => item.id === reportId
     );
 
-    if (!report) {
-      return;
+    if (report) {
+      this.startProtectedPhotoLoading(report);
     }
-
-    this.startProtectedPhotoLoading(report);
-
   }
 
   // =========================================
-  // CLEAR SELECTED REPORT PHOTOS
+  // CLEAR PHOTO SELECTION
   // =========================================
 
   clearSelectedReportPhotos(): void {
 
     this.selectedReportId.set(null);
+
     this.selectedPhotoFingerprint = null;
 
     this.releasePhotoResources();
-
   }
 
   // =========================================
-  // CLEAN UP PROTECTED IMAGE RESOURCES
+  // CLEAN UP PHOTO RESOURCES
   // =========================================
 
   private releasePhotoResources(): void {
 
-    // Cancel active photo downloads.
     this.photoAbortController?.abort();
+
     this.photoAbortController = null;
 
-    // Release previously displayed image URLs.
     for (const photo of this.photoUrls()) {
       URL.revokeObjectURL(photo.url);
     }
@@ -701,51 +856,48 @@ export class Reports implements OnInit, OnDestroy {
     this.photoUrls.set([]);
     this.isLoadingPhotos.set(false);
     this.photoError.set('');
-
   }
 
   // =========================================
-  // STATUS TRANSITION VALIDATION
+  // CHECK ALLOWED STATUS TRANSITIONS
   // =========================================
 
   private isAllowedTransition(
-    currentStatus: string,
-    newStatus: ReportStatus
+    current: string,
+    next: ReportStatus
   ): boolean {
 
-    if (currentStatus === 'pending') {
+    if (current === 'pending') {
 
       return [
         'in_progress',
         'resolved',
         'rejected'
-      ].includes(newStatus);
+      ].includes(next);
 
     }
 
-    if (currentStatus === 'in_progress') {
+    if (current === 'in_progress') {
 
       return [
         'resolved',
         'rejected'
-      ].includes(newStatus);
+      ].includes(next);
 
     }
 
     return false;
-
   }
 
   // =========================================
-  // ADMINISTRATOR STATUS UPDATE
+  // UPDATE REPORT STATUS SAFELY
   // =========================================
 
   async updateReportStatus(
     report: CommunityReport,
-    newStatus: ReportStatus
+    next: ReportStatus
   ): Promise<void> {
 
-    // Prevent multiple simultaneous updates.
     if (this.updatingReportId() !== null) {
       return;
     }
@@ -753,11 +905,22 @@ export class Reports implements OnInit, OnDestroy {
     this.statusSuccess.set('');
     this.statusError.set('');
 
-    // Check the allowed transition.
+    // Prevent actions on incomplete or
+    // unclassified reports.
+    if (!this.canReview(report)) {
+
+      this.statusError.set(
+        'This report is not confirmed ready for administrator review.'
+      );
+
+      return;
+    }
+
+    // Check status transition.
     if (
       !this.isAllowedTransition(
         report.status,
-        newStatus
+        next
       )
     ) {
 
@@ -768,22 +931,21 @@ export class Reports implements OnInit, OnDestroy {
       return;
     }
 
-    // Confirmation for final decisions.
+    // Confirm final decisions.
     if (
-      newStatus === 'resolved' ||
-      newStatus === 'rejected'
+      next === 'resolved' ||
+      next === 'rejected'
     ) {
 
       const confirmed = window.confirm(
-        'Are you sure you want to mark this report as ' +
-        newStatus.replace('_', ' ') +
+        'Mark this report as ' +
+        next.replace('_', ' ') +
         '? This is a final decision.'
       );
 
       if (!confirmed) {
         return;
       }
-
     }
 
     this.updatingReportId.set(report.id);
@@ -792,39 +954,83 @@ export class Reports implements OnInit, OnDestroy {
 
       await auth.authStateReady();
 
-      const currentUser = auth.currentUser;
+      if (!auth.currentUser) {
 
-      if (!currentUser) {
-
-        this.statusError.set(
-          'Administrator session not found. Please sign in.'
+        throw new Error(
+          'Administrator session not found.'
         );
-
-        return;
       }
 
-      // Reference existing Firestore report.
       const reportRef = doc(
         db,
         'reports',
         report.id
       );
 
-      // Update only administrator-controlled fields.
-      await updateDoc(reportRef, {
-        status: newStatus,
-        updatedAt: serverTimestamp()
-      });
+      // =====================================
+      // ATOMIC READINESS AND STATUS CHECK
+      // =====================================
 
-      if (this.destroyed) {
-        return;
-      }
+      await runTransaction(
+        db,
+        async transaction => {
 
-      this.statusSuccess.set(
-        'Report ' + report.id +
-        ' successfully updated to ' +
-        newStatus.replace('_', ' ') + '.'
+          const snap =
+            await transaction.get(reportRef);
+
+          if (!snap.exists()) {
+
+            throw new Error(
+              'REPORT_NOT_FOUND'
+            );
+          }
+
+          const latest = snap.data();
+
+          // Recheck the latest Firestore data.
+          if (!this.canReviewDocument(latest)) {
+
+            throw new Error(
+              'REPORT_NOT_READY'
+            );
+          }
+
+          if (
+            !this.isAllowedTransition(
+              latest['status'],
+              next
+            )
+          ) {
+
+            throw new Error(
+              'STATUS_CHANGED'
+            );
+          }
+
+          // Update only the administrator-
+          // controlled report fields.
+          transaction.update(reportRef, {
+
+            status: next,
+
+            updatedAt:
+              serverTimestamp()
+
+          });
+
+        }
       );
+
+      if (!this.destroyed) {
+
+        this.statusSuccess.set(
+          'Report ' +
+          report.id +
+          ' updated to ' +
+          next.replace('_', ' ') +
+          '.'
+        );
+      }
 
     } catch (error: unknown) {
 
@@ -837,27 +1043,43 @@ export class Reports implements OnInit, OnDestroy {
         return;
       }
 
-      const firebaseError = error as {
-        code?: string;
-      };
+      const code =
+        (error as { code?: string })?.code;
 
-      if (
-        firebaseError.code === 'permission-denied'
-      ) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : '';
+
+      if (message === 'REPORT_NOT_READY') {
 
         this.statusError.set(
-          'Permission denied. The administrator ' +
-          'does not have permission to make this change, ' +
-          'or the status transition is no longer valid.'
+          'This report is still missing confirmed photos or a verified legacy exemption.'
+        );
+
+      } else if (message === 'STATUS_CHANGED') {
+
+        this.statusError.set(
+          'This report status changed. Please review the latest status.'
+        );
+
+      } else if (message === 'REPORT_NOT_FOUND') {
+
+        this.statusError.set(
+          'This report no longer exists.'
+        );
+
+      } else if (code === 'permission-denied') {
+
+        this.statusError.set(
+          'Permission denied. Administrator access or a valid status transition is required.'
         );
 
       } else {
 
         this.statusError.set(
-          'Unable to update the report status. ' +
-          'Please try again.'
+          'Unable to update report status. Please try again.'
         );
-
       }
 
     } finally {
@@ -865,9 +1087,6 @@ export class Reports implements OnInit, OnDestroy {
       if (!this.destroyed) {
         this.updatingReportId.set(null);
       }
-
     }
-
   }
-
 }

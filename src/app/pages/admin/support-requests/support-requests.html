@@ -1,0 +1,441 @@
+
+<!-- ====================================== -->
+<!-- ADMINISTRATOR SUPPORT REQUESTS -->
+<!-- ====================================== -->
+
+<section class="admin-support-page">
+
+  <!-- ==================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ==================================== -->
+
+  <header>
+
+    <h1>
+      <mat-icon aria-hidden="true">
+        support_agent
+      </mat-icon>
+
+      Support Requests
+    </h1>
+
+    <p>
+      Review and manage support requests
+      submitted by community residents.
+    </p>
+
+    <a routerLink="/admin/dashboard">
+
+      <mat-icon aria-hidden="true">
+        arrow_back
+      </mat-icon>
+
+      Back to Admin Dashboard
+
+    </a>
+
+  </header>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- LOADING AND ERROR STATES -->
+  <!-- ==================================== -->
+
+  @if (isLoading()) {
+
+    <p role="status">
+      Loading support requests...
+    </p>
+
+  } @else {
+
+    @if (errorMessage()) {
+
+      <p role="alert">
+        <mat-icon aria-hidden="true">
+          error_outline
+        </mat-icon>
+
+        {{ errorMessage() }}
+      </p>
+
+    }
+
+    @if (successMessage()) {
+
+      <p role="status">
+        <mat-icon aria-hidden="true">
+          check_circle
+        </mat-icon>
+
+        {{ successMessage() }}
+      </p>
+
+    }
+
+    <!-- ================================ -->
+    <!-- REQUEST STATISTICS -->
+    <!-- ================================ -->
+
+    <section aria-label="Support request statistics">
+
+      <h2>Support Request Overview</h2>
+
+      <p>
+        Total Requests:
+        <strong>{{ totalRequests() }}</strong>
+      </p>
+
+      <p>
+        Open:
+        <strong>{{ openRequests() }}</strong>
+      </p>
+
+      <p>
+        In Progress:
+        <strong>{{ inProgressRequests() }}</strong>
+      </p>
+
+      <p>
+        Resolved:
+        <strong>{{ resolvedRequests() }}</strong>
+      </p>
+
+    </section>
+
+    <hr>
+
+    <!-- ================================ -->
+    <!-- STATUS FILTERS -->
+    <!-- ================================ -->
+
+    <section aria-label="Filter support requests">
+
+      <h2>Filter Requests</h2>
+
+      <div
+        class="support-status-filters"
+        role="group"
+        aria-label="Support request status"
+      >
+
+        @for (
+          filter of statusFilters;
+          track filter.value
+        ) {
+
+          <button
+            type="button"
+            [attr.aria-pressed]="
+              selectedFilter() === filter.value
+            "
+            (click)="selectFilter(filter.value)"
+          >
+
+            {{ filter.label }}
+
+          </button>
+
+        }
+
+      </div>
+
+    </section>
+
+    <hr>
+
+    <!-- ================================ -->
+    <!-- SUPPORT REQUEST LIST -->
+    <!-- ================================ -->
+
+    <section aria-label="Resident support requests">
+
+      <h2>Resident Support Requests</h2>
+
+      <p>
+        Showing {{ filteredRequests().length }}
+        request(s).
+      </p>
+
+      @if (filteredRequests().length === 0) {
+
+        <p>
+          No support requests match the
+          selected status.
+        </p>
+
+      } @else {
+
+        @for (
+          request of filteredRequests();
+          track request.id
+        ) {
+
+          <article class="support-request-item">
+
+            <h3>
+              {{ request.subject }}
+            </h3>
+
+            <p>
+              <strong>Topic:</strong>
+              {{ getTopicLabel(request.topic) }}
+            </p>
+
+            <p>
+              <strong>Status:</strong>
+              {{ request.status }}
+            </p>
+
+            <p>
+              <strong>Submitted:</strong>
+
+              @if (request.createdAt) {
+
+                {{ request.createdAt | date:'medium' }}
+
+              } @else {
+
+                Date unavailable
+
+              }
+
+            </p>
+
+            <button
+              type="button"
+              (click)="viewRequest(request.id)"
+            >
+
+              <mat-icon aria-hidden="true">
+                visibility
+              </mat-icon>
+
+              View Request Details
+
+            </button>
+
+            <hr>
+
+          </article>
+
+        }
+
+      }
+
+    </section>
+
+    <!-- ================================ -->
+    <!-- SELECTED REQUEST DETAILS -->
+    <!-- ================================ -->
+
+    @if (selectedRequest(); as request) {
+
+      <section
+        class="selected-support-request"
+        aria-label="Selected support request details"
+      >
+
+        <hr>
+
+        <h2>
+          <mat-icon aria-hidden="true">
+            description
+          </mat-icon>
+
+          Support Request Details
+        </h2>
+
+        <p>
+          <strong>Reference ID:</strong>
+          {{ request.id }}
+        </p>
+
+        <p>
+          <strong>Resident ID:</strong>
+          {{ request.residentId }}
+        </p>
+
+        <p>
+          <strong>Topic:</strong>
+          {{ getTopicLabel(request.topic) }}
+        </p>
+
+        <p>
+          <strong>Subject:</strong>
+          {{ request.subject }}
+        </p>
+
+        <h3>Resident Message</h3>
+
+        <p class="support-message">
+          {{ request.message }}
+        </p>
+
+        <p>
+          <strong>Current Status:</strong>
+          {{ request.status }}
+        </p>
+
+        <p>
+          <strong>Submitted:</strong>
+
+          @if (request.createdAt) {
+
+            {{ request.createdAt | date:'medium' }}
+
+          } @else {
+
+            Date unavailable
+
+          }
+        </p>
+
+        @if (request.updatedAt) {
+
+          <p>
+            <strong>Last Updated:</strong>
+            {{ request.updatedAt | date:'medium' }}
+          </p>
+
+        }
+
+        <!-- ============================ -->
+        <!-- ADMINISTRATOR STATUS ACTIONS -->
+        <!-- ============================ -->
+
+        <h3>Manage Request</h3>
+
+        @if (request.status === 'open') {
+
+          <button
+            type="button"
+            [disabled]="updatingRequestId() !== null"
+            (click)="updateRequestStatus(
+              request.id,
+              'in_progress'
+            )"
+          >
+
+            <mat-icon aria-hidden="true">
+              pending_actions
+            </mat-icon>
+
+            Mark In Progress
+
+          </button>
+
+          <button
+            type="button"
+            [disabled]="updatingRequestId() !== null"
+            (click)="updateRequestStatus(
+              request.id,
+              'resolved'
+            )"
+          >
+
+            <mat-icon aria-hidden="true">
+              check_circle
+            </mat-icon>
+
+            Mark Resolved
+
+          </button>
+
+        } @else if (
+          request.status === 'in_progress'
+        ) {
+
+          <button
+            type="button"
+            [disabled]="updatingRequestId() !== null"
+            (click)="updateRequestStatus(
+              request.id,
+              'resolved'
+            )"
+          >
+
+            <mat-icon aria-hidden="true">
+              check_circle
+            </mat-icon>
+
+            Mark Resolved
+
+          </button>
+
+        } @else {
+
+          <p>
+            This support request has been
+            marked as resolved.
+          </p>
+
+        }
+
+        @if (updatingRequestId() === request.id) {
+
+          <p role="status">
+            Updating request status...
+          </p>
+
+        }
+
+        <p>
+          <button
+            type="button"
+            (click)="closeRequestDetails()"
+          >
+
+            <mat-icon aria-hidden="true">
+              close
+            </mat-icon>
+
+            Close Details
+
+          </button>
+        </p>
+
+      </section>
+
+    }
+
+  }
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- DEMONSTRATION INFORMATION -->
+  <!-- ==================================== -->
+
+  <section>
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      Important Information
+    </h2>
+
+    <p>
+      Support requests are for questions
+      and technical concerns related
+      to BahaSumbong.
+    </p>
+
+    <p>
+      Changing the request status does not
+      automatically send an email or reply
+      to the resident.
+    </p>
+
+    <p>
+      BahaSumbong is an academic demonstration
+      system and is not an official
+      emergency response service.
+    </p>
+
+  </section>
+
+</section>

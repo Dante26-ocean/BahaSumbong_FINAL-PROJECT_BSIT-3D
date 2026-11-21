@@ -1,1 +1,443 @@
-<p>terms-and-conditions works!</p>
+
+<!-- ====================================== -->
+<!-- BAHASUMBONG TERMS AND CONDITIONS -->
+<!-- ====================================== -->
+
+<section class="terms-and-conditions-page">
+
+  <!-- ==================================== -->
+  <!-- PAGE HEADER -->
+  <!-- ==================================== -->
+
+  <header class="terms-header">
+
+    <h1>
+      <mat-icon aria-hidden="true">
+        gavel
+      </mat-icon>
+
+      Terms and Conditions
+    </h1>
+
+    <p>
+      Read the guidelines for responsible
+      use of BahaSumbong.
+    </p>
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        arrow_back
+      </mat-icon>
+
+      Back to Dashboard
+
+    </a>
+
+  </header>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- SYSTEM INFORMATION -->
+  <!-- ==================================== -->
+
+  <section class="terms-introduction">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      {{ systemName }}
+    </h2>
+
+    <p>
+      <strong>{{ systemFullName }}</strong>
+    </p>
+
+    <p>
+      {{ projectNotice }}
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- IMPORTANT NOTICE -->
+  <!-- ==================================== -->
+
+  <section
+    class="terms-important-notice"
+    aria-labelledby="termsNoticeHeading"
+  >
+
+    <h2 id="termsNoticeHeading">
+
+      <mat-icon aria-hidden="true">
+        warning_amber
+      </mat-icon>
+
+      Important Notice
+
+    </h2>
+
+    <p>
+      BahaSumbong is developed for
+      academic demonstration purposes.
+      It is not an officially deployed
+      public reporting service.
+    </p>
+
+    <p>
+      The application does not predict
+      floods or provide official
+      emergency warnings.
+    </p>
+
+    <p>
+      For immediate flooding emergencies,
+      contact the appropriate local
+      emergency response authorities.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- TERMS SECTION CONTROLS -->
+  <!-- ==================================== -->
+
+  <section
+    class="terms-content"
+    aria-labelledby="termsContentHeading"
+  >
+
+    <h2 id="termsContentHeading">
+
+      <mat-icon aria-hidden="true">
+        article
+      </mat-icon>
+
+      Usage Guidelines
+
+    </h2>
+
+    <p>
+      Select a section to read
+      its information.
+    </p>
+
+    <div class="terms-controls">
+
+      <button
+        type="button"
+        (click)="expandAll()"
+      >
+
+        <mat-icon aria-hidden="true">
+          expand_more
+        </mat-icon>
+
+        Expand All
+
+      </button>
+
+      <button
+        type="button"
+        (click)="collapseAll()"
+      >
+
+        <mat-icon aria-hidden="true">
+          expand_less
+        </mat-icon>
+
+        Collapse All
+
+      </button>
+
+    </div>
+
+    <hr>
+
+    <!-- ================================== -->
+    <!-- TERMS AND CONDITIONS SECTIONS -->
+    <!-- ================================== -->
+
+    <div class="terms-section-list">
+
+      @for (
+        section of sections;
+        track section.id
+      ) {
+
+        <article class="terms-section">
+
+          <!-- SECTION TITLE -->
+
+          <h3>
+
+            <button
+              type="button"
+              class="terms-section-button"
+              [attr.aria-expanded]="
+                isSectionExpanded(section.id)
+              "
+              [attr.aria-controls]="
+                'terms-content-' + section.id
+              "
+              (click)="toggleSection(section.id)"
+            >
+
+              <mat-icon aria-hidden="true">
+                {{ section.icon }}
+              </mat-icon>
+
+              <span>
+                {{ section.title }}
+              </span>
+
+              @if (isSectionExpanded(section.id)) {
+
+                <mat-icon aria-hidden="true">
+                  expand_less
+                </mat-icon>
+
+              } @else {
+
+                <mat-icon aria-hidden="true">
+                  expand_more
+                </mat-icon>
+
+              }
+
+            </button>
+
+          </h3>
+
+          <!-- ============================ -->
+          <!-- EXPANDABLE SECTION CONTENT -->
+          <!-- ============================ -->
+
+          <div
+            class="terms-section-content"
+            [id]="'terms-content-' + section.id"
+            [hidden]="!isSectionExpanded(section.id)"
+          >
+
+            <!-- EXPLANATIONS -->
+
+            @for (
+              paragraph of section.paragraphs;
+              track $index
+            ) {
+
+              <p>
+                {{ paragraph }}
+              </p>
+
+            }
+
+            <!-- GUIDELINES -->
+
+            @if (section.points.length > 0) {
+
+              <ul>
+
+                @for (
+                  point of section.points;
+                  track $index
+                ) {
+
+                  <li>
+                    {{ point }}
+                  </li>
+
+                }
+
+              </ul>
+
+            }
+
+          </div>
+
+        </article>
+
+      }
+
+    </div>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- RESPONSIBLE REPORTING REMINDER -->
+  <!-- ==================================== -->
+
+  <section class="responsible-reporting">
+
+    <h2>
+
+      <mat-icon aria-hidden="true">
+        verified_user
+      </mat-icon>
+
+      Responsible Community Reporting
+
+    </h2>
+
+    <p>
+      Residents are encouraged to submit
+      truthful, relevant, and accurate
+      flooding or drainage information.
+    </p>
+
+    <p>
+      Submitting misleading reports may
+      reduce the usefulness of
+      community reporting information.
+    </p>
+
+    <p>
+      Report information should not
+      be treated as an official
+      professional assessment.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- INFORMATION AND PRIVACY REMINDER -->
+  <!-- ==================================== -->
+
+  <section class="privacy-reminder">
+
+    <h2>
+
+      <mat-icon aria-hidden="true">
+        lock_outline
+      </mat-icon>
+
+      Protect Your Information
+
+    </h2>
+
+    <p>
+      Keep your account credentials private
+      and avoid including unnecessary
+      sensitive information in reports
+      or support requests.
+    </p>
+
+    <p>
+      For this academic demonstration,
+      use appropriate sample information
+      instead of uploading actual identity
+      documents or other confidential records.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- HELP AND SUPPORT -->
+  <!-- ==================================== -->
+
+  <section class="terms-support">
+
+    <h2>
+
+      <mat-icon aria-hidden="true">
+        contact_support
+      </mat-icon>
+
+      Questions or Concerns?
+
+    </h2>
+
+    <p>
+      If you have questions about using
+      BahaSumbong, visit the Help Center
+      or submit a support request.
+    </p>
+
+    <p>
+
+      <a routerLink="/community/help-center">
+
+        <mat-icon aria-hidden="true">
+          help_outline
+        </mat-icon>
+
+        Visit Help Center
+
+      </a>
+
+    </p>
+
+    <p>
+
+      <a routerLink="/community/contact-us">
+
+        <mat-icon aria-hidden="true">
+          contact_support
+        </mat-icon>
+
+        Contact Us
+
+      </a>
+
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- FOOTER NAVIGATION -->
+  <!-- ==================================== -->
+
+  <nav
+    class="terms-footer-navigation"
+    aria-label="Terms and Conditions navigation"
+  >
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        home
+      </mat-icon>
+
+      Community Dashboard
+
+    </a>
+
+    <a routerLink="/community/about-us">
+
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      About Us
+
+    </a>
+
+    <a routerLink="/community/help-center">
+
+      <mat-icon aria-hidden="true">
+        help_outline
+      </mat-icon>
+
+      Help Center
+
+    </a>
+
+  </nav>
+
+</section>

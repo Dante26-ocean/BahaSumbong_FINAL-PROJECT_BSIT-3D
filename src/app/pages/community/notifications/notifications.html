@@ -1,1 +1,252 @@
-<p>notifications works!</p>
+
+<!-- ====================================== -->
+<!-- COMMUNITY RESIDENT NOTIFICATIONS -->
+<!-- ====================================== -->
+
+<section class="notifications-page">
+
+  <h2>My Notifications</h2>
+
+  <p>
+    View updates about your submitted
+    flooding and drainage reports.
+  </p>
+
+  <!-- ==================================== -->
+  <!-- STEP 93.6 - DASHBOARD NAVIGATION -->
+  <!-- ==================================== -->
+
+  <a routerLink="/community/dashboard">
+    Back to Dashboard
+  </a>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- LOADING STATE -->
+  <!-- ==================================== -->
+
+  @if (isLoading) {
+
+    <div class="notifications-loading">
+
+      <p>
+        Loading your notifications...
+      </p>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- ERROR STATE -->
+  <!-- ==================================== -->
+
+  @else if (errorMessage) {
+
+    <div class="notifications-error">
+
+      <p role="alert">
+        {{ errorMessage }}
+      </p>
+
+      <button
+        type="button"
+        (click)="refreshNotifications()"
+      >
+        Try Again
+      </button>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- EMPTY NOTIFICATIONS STATE -->
+  <!-- ==================================== -->
+
+  @else if (notifications.length === 0) {
+
+    <div class="notifications-empty">
+
+      <h3>No Notifications Yet</h3>
+
+      <p>
+        You don't have any report status
+        updates at the moment.
+      </p>
+
+      <p>
+        Notifications will appear here
+        when an administrator updates
+        the status of your submitted reports.
+      </p>
+
+      <button
+        type="button"
+        (click)="refreshNotifications()"
+      >
+        Refresh Notifications
+      </button>
+
+    </div>
+
+  }
+
+  <!-- ==================================== -->
+  <!-- NOTIFICATION LIST -->
+  <!-- ==================================== -->
+
+  @else {
+
+    <div class="notifications-content">
+
+      <!-- NOTIFICATION HEADER -->
+
+      <div class="notifications-header">
+
+        <h3>
+          Report Status Updates
+        </h3>
+
+        <p>
+          Total Notifications:
+          {{ notifications.length }}
+        </p>
+
+        <button
+          type="button"
+          (click)="refreshNotifications()"
+        >
+          Refresh Notifications
+        </button>
+
+      </div>
+
+      <!-- ================================== -->
+      <!-- INDIVIDUAL NOTIFICATIONS -->
+      <!-- ================================== -->
+
+      <div
+        class="notifications-list"
+        aria-live="polite"
+      >
+
+        @for (
+          notification of notifications;
+          track notification.id
+        ) {
+
+          <article
+            class="notification-item"
+            [class.notification-in-progress]="
+              notification.status === 'in_progress'
+            "
+            [class.notification-resolved]="
+              notification.status === 'resolved'
+            "
+            [class.notification-rejected]="
+              notification.status === 'rejected'
+            "
+          >
+
+            <!-- NOTIFICATION TITLE -->
+
+            <div class="notification-title">
+
+              <h4>
+                {{ notification.problemType }}
+              </h4>
+
+              <!-- REPORT STATUS -->
+
+              <p>
+                <strong>Status:</strong>
+
+                <span class="notification-status">
+                  {{ notification.statusLabel }}
+                </span>
+              </p>
+
+            </div>
+
+            <!-- NOTIFICATION MESSAGE -->
+
+            <div class="notification-message">
+
+              <p>
+                {{ notification.message }}
+              </p>
+
+            </div>
+
+            <!-- REPORT LOCATION -->
+
+            <div class="notification-location">
+
+              <p>
+                <strong>Location:</strong>
+
+                @if (notification.locationDescription) {
+
+                  {{ notification.locationDescription }}
+
+                } @else {
+
+                  Location unavailable
+
+                }
+              </p>
+
+            </div>
+
+            <!-- REPORT UPDATE DATE -->
+
+            <div class="notification-date">
+
+              <p>
+                <strong>Updated:</strong>
+                {{ notification.updatedAtText }}
+              </p>
+
+            </div>
+
+            <!-- REPORT IDENTIFIER -->
+
+            <div class="notification-report-id">
+
+              <p>
+                <strong>Report ID:</strong>
+                {{ notification.reportId }}
+              </p>
+
+            </div>
+
+            <!-- ================================== -->
+            <!-- STEP 93.6 - REPORT NAVIGATION -->
+            <!-- ================================== -->
+
+            <div class="notification-actions">
+
+              <a
+                [routerLink]="[
+                  '/community/report-details',
+                  notification.reportId
+                ]"
+              >
+                View Report Details
+              </a>
+
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    </div>
+
+  }
+
+</section>

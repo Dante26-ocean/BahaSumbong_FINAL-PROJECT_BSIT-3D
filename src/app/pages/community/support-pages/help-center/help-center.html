@@ -1,1 +1,437 @@
-<p>help-center works!</p>
+
+<!-- ====================================== -->
+<!-- BAHASUMBONG COMMUNITY HELP CENTER -->
+<!-- ====================================== -->
+
+<section class="help-center-page">
+
+  <!-- ==================================== -->
+  <!-- HELP CENTER HEADER -->
+  <!-- ==================================== -->
+
+  <header class="help-center-header">
+
+    <h1>
+      <mat-icon aria-hidden="true">
+        help_outline
+      </mat-icon>
+
+      Help Center
+    </h1>
+
+    <p>
+      Find answers to common questions about
+      using BahaSumbong.
+    </p>
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        arrow_back
+      </mat-icon>
+
+      Back to Dashboard
+
+    </a>
+
+  </header>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- SEARCH HELP ARTICLES -->
+  <!-- ==================================== -->
+
+  <section
+    class="help-search-section"
+    aria-label="Search help articles"
+  >
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        search
+      </mat-icon>
+
+      Search for Help
+    </h2>
+
+    <p>
+      Enter a keyword or question to find
+      related help articles.
+    </p>
+
+    <label for="helpSearch">
+      Search Questions:
+    </label>
+
+    <input
+      id="helpSearch"
+      type="search"
+      placeholder="Search for help..."
+      [value]="searchText()"
+      (input)="updateSearch($any($event.target).value)"
+    >
+
+    @if (searchText()) {
+
+      <button
+        type="button"
+        (click)="updateSearch('')"
+      >
+
+        <mat-icon aria-hidden="true">
+          close
+        </mat-icon>
+
+        Clear Search
+
+      </button>
+
+    }
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- HELP CENTER CATEGORIES -->
+  <!-- ==================================== -->
+
+  <section
+    class="help-categories-section"
+    aria-labelledby="helpCategoriesHeading"
+  >
+
+    <h2 id="helpCategoriesHeading">
+      Browse Help Topics
+    </h2>
+
+    <p>
+      Select a topic to find related questions.
+    </p>
+
+    <div
+      class="help-category-list"
+      role="group"
+      aria-label="Help topic filters"
+    >
+
+      @for (
+        category of categories;
+        track category.id
+      ) {
+
+        <button
+          type="button"
+          class="help-category-button"
+          [class.active]="
+            selectedCategory() === category.id
+          "
+          [attr.aria-pressed]="
+            selectedCategory() === category.id
+          "
+          (click)="selectCategory(category.id)"
+        >
+
+          <mat-icon aria-hidden="true">
+            {{ category.icon }}
+          </mat-icon>
+
+          {{ category.label }}
+
+        </button>
+
+      }
+
+    </div>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- HELP ARTICLE SUMMARY -->
+  <!-- ==================================== -->
+
+  <section class="help-articles-section">
+
+    <h2>
+      Frequently Asked Questions
+    </h2>
+
+    <p role="status" aria-live="polite">
+
+      <strong>Showing:</strong>
+      {{ visibleArticleCount() }}
+      of
+      {{ totalArticles }}
+      help articles
+
+    </p>
+
+    <!-- ================================== -->
+    <!-- EMPTY SEARCH RESULTS -->
+    <!-- ================================== -->
+
+    @if (filteredArticles().length === 0) {
+
+      <div class="help-empty-state">
+
+        <mat-icon aria-hidden="true">
+          search_off
+        </mat-icon>
+
+        <h3>No Matching Questions Found</h3>
+
+        <p>
+          We couldn't find any help articles
+          matching your search or selected topic.
+        </p>
+
+        <p>
+          Try a different keyword or browse
+          all available topics.
+        </p>
+
+        <button
+          type="button"
+          (click)="clearFilters()"
+        >
+
+          <mat-icon aria-hidden="true">
+            refresh
+          </mat-icon>
+
+          Show All Questions
+
+        </button>
+
+      </div>
+
+    } @else {
+
+      <!-- ================================== -->
+      <!-- FREQUENTLY ASKED QUESTIONS -->
+      <!-- ================================== -->
+
+      <div class="help-articles-list">
+
+        @for (
+          article of filteredArticles();
+          track article.id
+        ) {
+
+          <article class="help-article">
+
+            <h3>
+
+              <button
+                type="button"
+                class="help-question-button"
+                [attr.aria-expanded]="
+                  isArticleExpanded(article.id)
+                "
+                [attr.aria-controls]="
+                  'help-answer-' + article.id
+                "
+                (click)="toggleArticle(article.id)"
+              >
+
+                <span>
+                  {{ article.question }}
+                </span>
+
+                @if (isArticleExpanded(article.id)) {
+
+                  <mat-icon aria-hidden="true">
+                    expand_less
+                  </mat-icon>
+
+                } @else {
+
+                  <mat-icon aria-hidden="true">
+                    expand_more
+                  </mat-icon>
+
+                }
+
+              </button>
+
+            </h3>
+
+            <!-- ============================ -->
+            <!-- EXPANDED ARTICLE ANSWER -->
+            <!-- ============================ -->
+
+            @if (isArticleExpanded(article.id)) {
+
+              <div
+                class="help-article-answer"
+                [id]="'help-answer-' + article.id"
+              >
+
+                <p>
+                  {{ article.answer }}
+                </p>
+
+                @if (
+                  article.route &&
+                  article.routeLabel
+                ) {
+
+                  <p>
+
+                    <a [routerLink]="article.route">
+
+                      {{ article.routeLabel }}
+
+                      <mat-icon aria-hidden="true">
+                        arrow_forward
+                      </mat-icon>
+
+                    </a>
+
+                  </p>
+
+                }
+
+              </div>
+
+            }
+
+          </article>
+
+        }
+
+      </div>
+
+    }
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- ADDITIONAL GUIDANCE -->
+  <!-- ==================================== -->
+
+  <section class="help-guidance-section">
+
+    <h2>
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      Important Information
+    </h2>
+
+    <p>
+      BahaSumbong allows approved residents
+      to report flooding and drainage problems
+      and monitor their report statuses.
+    </p>
+
+    <p>
+      Reported information depends on
+      resident submissions and may not
+      have been independently verified.
+    </p>
+
+    <p>
+      BahaSumbong is an academic
+      demonstration system.
+      It does not predict floods or
+      replace official disaster monitoring
+      and emergency response services.
+    </p>
+
+  </section>
+
+  <hr>
+
+  <!-- ==================================== -->
+  <!-- HELP CENTER NAVIGATION -->
+  <!-- ==================================== -->
+
+  <nav
+    class="help-footer-navigation"
+    aria-label="Help Center navigation"
+  >
+
+    <a routerLink="/community/dashboard">
+
+      <mat-icon aria-hidden="true">
+        home
+      </mat-icon>
+
+      Community Dashboard
+
+    </a>
+
+    <a routerLink="/community/my-reports">
+
+      <mat-icon aria-hidden="true">
+        description
+      </mat-icon>
+
+      My Reports
+
+    </a>
+
+    <a routerLink="/community/map">
+
+      <mat-icon aria-hidden="true">
+        map
+      </mat-icon>
+
+      Community Map
+
+    </a>
+
+    <a routerLink="/community/account-and-login">
+
+      <mat-icon aria-hidden="true">
+        manage_accounts
+      </mat-icon>
+
+      Account and Login
+
+    </a>
+
+    <a routerLink="/community/contact-us">
+
+      <mat-icon aria-hidden="true">
+        contact_support
+      </mat-icon>
+
+      Contact Us
+
+    </a>
+
+    <a routerLink="/community/about-us">
+
+      <mat-icon aria-hidden="true">
+        info_outline
+      </mat-icon>
+
+      About Us
+
+    </a>
+
+    <!-- ================================== -->
+    <!-- STEP 105.2 - TERMS AND CONDITIONS -->
+    <!-- ================================== -->
+
+    <a routerLink="/community/terms-and-conditions">
+
+      <mat-icon aria-hidden="true">
+        gavel
+      </mat-icon>
+
+      Terms and Conditions
+
+    </a>
+
+  </nav>
+
+</section>
